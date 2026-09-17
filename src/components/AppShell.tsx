@@ -10,6 +10,7 @@ import { IngestionTab } from "@/components/ingestion/IngestionTab";
 import { ContractTab } from "@/components/contract/ContractTab";
 import { ReportingTab } from "@/components/reporting/ReportingTab";
 import { NewMatterModal } from "@/components/modals/NewMatterModal";
+import { GlobalSearch } from "@/components/GlobalSearch";
 import { initialMatters, initialDocs, Matter, IngestedDoc } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -49,6 +50,7 @@ export function AppShell() {
       setActiveTab("ingestion");
       return;
     }
+    setActiveTab("docket");
     notify(`Opening ${matter.caseNumber}`, matter.title);
   }
 
@@ -105,7 +107,8 @@ export function AppShell() {
                 );
               })}
             </nav>
-            <div className="hidden md:block py-2">
+            <div className="hidden lg:flex items-center gap-3 py-2">
+              <GlobalSearch matters={matters} onSelect={handleOpenCase} />
               <Button onClick={() => setModalOpen(true)}>
                 <Plus className="h-4 w-4" />
                 New Matter Intake
@@ -115,7 +118,8 @@ export function AppShell() {
         </div>
       </div>
 
-      <div className="md:hidden px-6 pt-4">
+      <div className="lg:hidden px-6 pt-4 space-y-3">
+        <GlobalSearch matters={matters} onSelect={handleOpenCase} />
         <Button className="w-full" onClick={() => setModalOpen(true)}>
           <Plus className="h-4 w-4" />
           New Matter Intake
