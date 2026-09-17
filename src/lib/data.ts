@@ -21,13 +21,34 @@ export interface Matter {
   title: string;
   type: MatterType;
   dept: string;
-  slaLabel: string;
-  slaDays: number;
-  slaUrgent: boolean;
+  targetDate: string; // ISO date the statutory/administrative deadline falls on
+  deadlineType: string; // e.g. "TTCA Notice", "Council Agenda", "Civil Court Answer"
   status: MatterStatus;
   exposure: number | null;
   exposureLabel: string;
   pendingCouncil: boolean;
+}
+
+export const TODAY = new Date("2026-09-17T00:00:00Z");
+
+export interface DeadlineStatus {
+  daysRemaining: number;
+  urgent: boolean;
+  overdue: boolean;
+  label: string;
+}
+
+export function getDeadlineStatus(matter: Pick<Matter, "targetDate" | "deadlineType">): DeadlineStatus {
+  const target = new Date(matter.targetDate + "T00:00:00Z");
+  const daysRemaining = Math.round((target.getTime() - TODAY.getTime()) / 86400000);
+  const overdue = daysRemaining < 0;
+  const urgent = !overdue && daysRemaining < 15;
+  const label = overdue
+    ? `⚠️ OVERDUE by ${Math.abs(daysRemaining)} Days (${matter.deadlineType})`
+    : urgent
+    ? `⚠️ ${daysRemaining} Days (${matter.deadlineType})`
+    : `${daysRemaining} Days (${matter.deadlineType})`;
+  return { daysRemaining, urgent, overdue, label };
 }
 
 export const initialMatters: Matter[] = [
@@ -37,9 +58,8 @@ export const initialMatters: Matter[] = [
     title: "Pothole & Axle Structural Damage (MacArthur Blvd)",
     type: "Tort Claim",
     dept: "Public Works",
-    slaLabel: "⚠️ 12 Days (TTCA Notice)",
-    slaDays: 12,
-    slaUrgent: true,
+    targetDate: "2026-09-29",
+    deadlineType: "TTCA Notice",
     status: "Under Review",
     exposure: 4250,
     exposureLabel: "$4,250",
@@ -51,9 +71,8 @@ export const initialMatters: Matter[] = [
     title: "Enterprise Cloud Infrastructure Master Services Agreement",
     type: "Vendor Contract",
     dept: "IT",
-    slaLabel: "6 Days (Council Agenda)",
-    slaDays: 6,
-    slaUrgent: false,
+    targetDate: "2026-09-23",
+    deadlineType: "Council Agenda",
     status: "Legal Redline",
     exposure: 480000,
     exposureLabel: "$480,000",
@@ -65,9 +84,8 @@ export const initialMatters: Matter[] = [
     title: "Commercial Zoning Setback Variance Appeal",
     type: "Civil Action",
     dept: "Planning",
-    slaLabel: "19 Days (Civil Court Answer)",
-    slaDays: 19,
-    slaUrgent: false,
+    targetDate: "2026-10-06",
+    deadlineType: "Civil Court Answer",
     status: "Briefing",
     exposure: null,
     exposureLabel: "Injunction Risk",
@@ -79,9 +97,8 @@ export const initialMatters: Matter[] = [
     title: "Sidewalk Trip & Fall Injury Claim (Rock Island Rd)",
     type: "Tort Claim",
     dept: "Parks & Recreation",
-    slaLabel: "⚠️ 9 Days (TTCA Notice)",
-    slaDays: 9,
-    slaUrgent: true,
+    targetDate: "2026-09-26",
+    deadlineType: "TTCA Notice",
     status: "Under Review",
     exposure: 12500,
     exposureLabel: "$12,500",
@@ -93,9 +110,8 @@ export const initialMatters: Matter[] = [
     title: "Water Main Break Property Flooding Claim (Story Rd)",
     type: "Tort Claim",
     dept: "Public Works",
-    slaLabel: "34 Days (TTCA Notice)",
-    slaDays: 34,
-    slaUrgent: false,
+    targetDate: "2026-10-21",
+    deadlineType: "TTCA Notice",
     status: "Investigation",
     exposure: 8900,
     exposureLabel: "$8,900",
@@ -107,9 +123,8 @@ export const initialMatters: Matter[] = [
     title: "Fleet Vehicle Collision - Third Party Damage",
     type: "Tort Claim",
     dept: "Fleet Services",
-    slaLabel: "41 Days (TTCA Notice)",
-    slaDays: 41,
-    slaUrgent: false,
+    targetDate: "2026-10-28",
+    deadlineType: "TTCA Notice",
     status: "Investigation",
     exposure: 22000,
     exposureLabel: "$22,000",
@@ -121,9 +136,8 @@ export const initialMatters: Matter[] = [
     title: "Traffic Signal Malfunction Vehicle Damage Claim",
     type: "Tort Claim",
     dept: "Public Works",
-    slaLabel: "28 Days (TTCA Notice)",
-    slaDays: 28,
-    slaUrgent: false,
+    targetDate: "2026-10-15",
+    deadlineType: "TTCA Notice",
     status: "Under Review",
     exposure: 5600,
     exposureLabel: "$5,600",
@@ -135,9 +149,8 @@ export const initialMatters: Matter[] = [
     title: "Municipal Pool Slip & Fall Personal Injury Claim",
     type: "Tort Claim",
     dept: "Parks & Recreation",
-    slaLabel: "45 Days (TTCA Notice)",
-    slaDays: 45,
-    slaUrgent: false,
+    targetDate: "2026-11-01",
+    deadlineType: "TTCA Notice",
     status: "Closed - Settled",
     exposure: 15750,
     exposureLabel: "$15,750",
@@ -149,9 +162,8 @@ export const initialMatters: Matter[] = [
     title: "Storm Debris Property Damage Claim (Delaware Creek)",
     type: "Tort Claim",
     dept: "Public Works",
-    slaLabel: "52 Days (TTCA Notice)",
-    slaDays: 52,
-    slaUrgent: false,
+    targetDate: "2026-11-08",
+    deadlineType: "TTCA Notice",
     status: "Investigation",
     exposure: 9800,
     exposureLabel: "$9,800",
@@ -163,9 +175,8 @@ export const initialMatters: Matter[] = [
     title: "Public Safety Records Management Software License",
     type: "Vendor Contract",
     dept: "Police",
-    slaLabel: "17 Days (Council Agenda)",
-    slaDays: 17,
-    slaUrgent: false,
+    targetDate: "2026-10-04",
+    deadlineType: "Council Agenda",
     status: "Awaiting Council",
     exposure: 210000,
     exposureLabel: "$210,000",
@@ -177,9 +188,8 @@ export const initialMatters: Matter[] = [
     title: "Municipal Fleet Maintenance Services Agreement",
     type: "Vendor Contract",
     dept: "Fleet Services",
-    slaLabel: "23 Days (Council Agenda)",
-    slaDays: 23,
-    slaUrgent: false,
+    targetDate: "2026-10-10",
+    deadlineType: "Council Agenda",
     status: "Negotiation",
     exposure: 65000,
     exposureLabel: "$65,000",
@@ -191,9 +201,8 @@ export const initialMatters: Matter[] = [
     title: "Parks Landscaping & Irrigation Maintenance Contract",
     type: "Vendor Contract",
     dept: "Parks & Recreation",
-    slaLabel: "31 Days (Council Agenda)",
-    slaDays: 31,
-    slaUrgent: false,
+    targetDate: "2026-10-18",
+    deadlineType: "Council Agenda",
     status: "Legal Redline",
     exposure: 38500,
     exposureLabel: "$38,500",
@@ -205,9 +214,8 @@ export const initialMatters: Matter[] = [
     title: "Body-Worn Camera & Digital Evidence Platform Agreement",
     type: "Vendor Contract",
     dept: "Police",
-    slaLabel: "14 Days (Council Agenda)",
-    slaDays: 14,
-    slaUrgent: false,
+    targetDate: "2026-10-01",
+    deadlineType: "Council Agenda",
     status: "Awaiting Council",
     exposure: 120000,
     exposureLabel: "$120,000",
@@ -219,9 +227,8 @@ export const initialMatters: Matter[] = [
     title: "Downtown Streetscape Design-Build Contract",
     type: "Vendor Contract",
     dept: "Planning",
-    slaLabel: "27 Days (Council Agenda)",
-    slaDays: 27,
-    slaUrgent: false,
+    targetDate: "2026-10-14",
+    deadlineType: "Council Agenda",
     status: "Awaiting Council",
     exposure: 95000,
     exposureLabel: "$95,000",
@@ -233,9 +240,8 @@ export const initialMatters: Matter[] = [
     title: "Repeat Short-Term Rental Ordinance Violation (Citation Appeal)",
     type: "Ordinance",
     dept: "Code Compliance",
-    slaLabel: "20 Days (Municipal Court)",
-    slaDays: 20,
-    slaUrgent: false,
+    targetDate: "2026-10-07",
+    deadlineType: "Municipal Court",
     status: "Filed",
     exposure: 2500,
     exposureLabel: "$2,500",
@@ -247,9 +253,8 @@ export const initialMatters: Matter[] = [
     title: "Commercial Signage Code Violation Enforcement",
     type: "Ordinance",
     dept: "Code Compliance",
-    slaLabel: "38 Days (Municipal Court)",
-    slaDays: 38,
-    slaUrgent: false,
+    targetDate: "2026-10-25",
+    deadlineType: "Municipal Court",
     status: "Investigation",
     exposure: 1800,
     exposureLabel: "$1,800",
@@ -261,9 +266,8 @@ export const initialMatters: Matter[] = [
     title: "Illegal Dumping Nuisance Abatement Citation",
     type: "Ordinance",
     dept: "Code Compliance",
-    slaLabel: "44 Days (Municipal Court)",
-    slaDays: 44,
-    slaUrgent: false,
+    targetDate: "2026-10-31",
+    deadlineType: "Municipal Court",
     status: "Filed",
     exposure: 3200,
     exposureLabel: "$3,200",
@@ -275,9 +279,8 @@ export const initialMatters: Matter[] = [
     title: "Inverse Condemnation Claim - Drainage Easement Dispute",
     type: "Civil Action",
     dept: "Public Works",
-    slaLabel: "61 Days (Civil Court Answer)",
-    slaDays: 61,
-    slaUrgent: false,
+    targetDate: "2026-11-17",
+    deadlineType: "Civil Court Answer",
     status: "Discovery",
     exposure: 329700,
     exposureLabel: "$329,700",

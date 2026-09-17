@@ -14,6 +14,7 @@ import {
   FilterKey,
   filterPills,
   formatCurrency,
+  getDeadlineStatus,
   Matter,
   MatterStatus,
 } from "@/lib/data";
@@ -59,7 +60,7 @@ export function DocketTab({
   );
 
   const urgentSlaCount = useMemo(
-    () => matters.filter((m) => m.slaUrgent && m.slaDays < 15).length,
+    () => matters.filter((m) => getDeadlineStatus(m).urgent).length,
     [matters]
   );
 
@@ -137,7 +138,9 @@ export function DocketTab({
               </tr>
             </thead>
             <tbody>
-              {visibleMatters.map((m) => (
+              {visibleMatters.map((m) => {
+                const deadline = getDeadlineStatus(m);
+                return (
                 <tr
                   key={m.id}
                   onClick={() => onOpenCase(m)}
@@ -159,10 +162,10 @@ export function DocketTab({
                     <span
                       className={cn(
                         "text-xs font-medium",
-                        m.slaUrgent ? "text-red-600" : "text-slate-600"
+                        deadline.urgent || deadline.overdue ? "text-red-600" : "text-slate-600"
                       )}
                     >
-                      {m.slaLabel}
+                      {deadline.label}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -175,7 +178,8 @@ export function DocketTab({
                     <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-slate-500" />
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
