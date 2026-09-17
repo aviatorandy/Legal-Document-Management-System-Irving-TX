@@ -9,6 +9,7 @@ import {
   departments,
   matterCategories,
   Matter,
+  TODAY,
 } from "@/lib/data";
 
 let trackingSeq = 904;
@@ -63,6 +64,17 @@ export function NewMatterModal({
     const trackingCode = `IRV-2026-${prefix}-${trackingSeq}`;
 
     const numericValue = Number(value.replace(/[^0-9.]/g, "")) || 0;
+    const deadlineType =
+      type === "Tort Claim"
+        ? "TTCA Notice"
+        : type === "Vendor Contract"
+        ? "Council Agenda"
+        : type === "Ordinance"
+        ? "Municipal Court"
+        : "Civil Court Answer";
+    const fallbackTarget = new Date(TODAY.getTime() + 30 * 86400000)
+      .toISOString()
+      .slice(0, 10);
 
     const newMatter: Matter = {
       id: `m-${Date.now()}`,
@@ -70,9 +82,8 @@ export function NewMatterModal({
       title: title.trim(),
       type,
       dept,
-      slaLabel: date ? `Target: ${date}` : "Pending Assignment",
-      slaDays: 30,
-      slaUrgent: false,
+      targetDate: date || fallbackTarget,
+      deadlineType,
       status: "Under Review",
       exposure: numericValue || null,
       exposureLabel: numericValue ? `$${numericValue.toLocaleString()}` : "TBD",

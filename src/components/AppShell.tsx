@@ -1,23 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { Gavel, FolderInput, FileCheck2, Plus } from "lucide-react";
+import { Gavel, FolderInput, FileCheck2, Plus, BarChart3 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/Button";
 import { ToastViewport, ToastMessage } from "@/components/ui/Toast";
 import { DocketTab } from "@/components/docket/DocketTab";
 import { IngestionTab } from "@/components/ingestion/IngestionTab";
 import { ContractTab } from "@/components/contract/ContractTab";
+import { ReportingTab } from "@/components/reporting/ReportingTab";
 import { NewMatterModal } from "@/components/modals/NewMatterModal";
 import { initialMatters, initialDocs, Matter, IngestedDoc } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
-type TabKey = "docket" | "ingestion" | "contract";
+type TabKey = "docket" | "ingestion" | "contract" | "reporting";
 
 const tabs: { key: TabKey; label: string; icon: typeof Gavel }[] = [
   { key: "docket", label: "Litigation & Claims Docket", icon: Gavel },
   { key: "ingestion", label: "Document Bundle Ingestion & Triage", icon: FolderInput },
   { key: "contract", label: "Contract Compliance Studio", icon: FileCheck2 },
+  { key: "reporting", label: "Reporting & Analytics", icon: BarChart3 },
 ];
 
 let toastSeq = 1;
@@ -128,6 +130,7 @@ export function AppShell() {
           <IngestionTab docs={docs} onRedact={handleRedact} onNotify={notify} />
         )}
         {activeTab === "contract" && <ContractTab onNotify={notify} />}
+        {activeTab === "reporting" && <ReportingTab matters={matters} />}
       </main>
 
       <NewMatterModal
