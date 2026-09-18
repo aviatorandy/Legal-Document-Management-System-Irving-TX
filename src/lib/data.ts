@@ -1,8 +1,4 @@
-export type MatterType =
-  | "Tort Claim"
-  | "Vendor Contract"
-  | "Ordinance"
-  | "Civil Action";
+export type MatterType = "Vendor Contract" | "Ordinance" | "Civil Action";
 
 export type MatterStatus =
   | "Under Review"
@@ -27,6 +23,28 @@ export interface Matter {
   exposure: number | null;
   exposureLabel: string;
   pendingCouncil: boolean;
+  linkedClaimId?: string; // set when this matter was escalated from a Claim
+}
+
+export type ClaimStatus =
+  | "Notice Filed"
+  | "Under Review"
+  | "Investigation"
+  | "Denied"
+  | "Settled"
+  | "Converted to Litigation";
+
+export interface Claim {
+  id: string;
+  claimNumber: string;
+  title: string;
+  incidentDate: string; // ISO date
+  incidentLocation: string;
+  dept: string;
+  claimantName: string;
+  initialDemand: number;
+  status: ClaimStatus;
+  linkedMatterId?: string; // set once converted to litigation
 }
 
 export const TODAY = new Date("2026-09-17T00:00:00Z");
@@ -51,20 +69,87 @@ export function getDeadlineStatus(matter: Pick<Matter, "targetDate" | "deadlineT
   return { daysRemaining, urgent, overdue, label };
 }
 
-export const initialMatters: Matter[] = [
+export const initialClaims: Claim[] = [
   {
-    id: "m1",
-    caseNumber: "CLM-2026-089",
+    id: "c1",
+    claimNumber: "CLM-2026-089",
     title: "Pothole & Axle Structural Damage (MacArthur Blvd)",
-    type: "Tort Claim",
+    incidentDate: "2026-08-28",
+    incidentLocation: "MacArthur Blvd",
     dept: "Public Works",
-    targetDate: "2026-09-29",
-    deadlineType: "TTCA Notice",
+    claimantName: "Marcus Whitfield",
+    initialDemand: 4250,
     status: "Under Review",
-    exposure: 4250,
-    exposureLabel: "$4,250",
-    pendingCouncil: false,
   },
+  {
+    id: "c2",
+    claimNumber: "CLM-2026-091",
+    title: "Sidewalk Trip & Fall Injury Claim (Rock Island Rd)",
+    incidentDate: "2026-09-02",
+    incidentLocation: "Rock Island Rd",
+    dept: "Parks & Recreation",
+    claimantName: "Della Ramirez",
+    initialDemand: 12500,
+    status: "Under Review",
+  },
+  {
+    id: "c3",
+    claimNumber: "CLM-2026-084",
+    title: "Water Main Break Property Flooding Claim (Story Rd)",
+    incidentDate: "2026-08-15",
+    incidentLocation: "Story Rd",
+    dept: "Public Works",
+    claimantName: "Harold Beckett",
+    initialDemand: 8900,
+    status: "Investigation",
+  },
+  {
+    id: "c4",
+    claimNumber: "CLM-2026-077",
+    title: "Fleet Vehicle Collision - Third Party Damage",
+    incidentDate: "2026-08-05",
+    incidentLocation: "Story Rd & O'Connor Rd",
+    dept: "Fleet Services",
+    claimantName: "Priya Nandakumar",
+    initialDemand: 22000,
+    status: "Investigation",
+  },
+  {
+    id: "c5",
+    claimNumber: "CLM-2026-070",
+    title: "Traffic Signal Malfunction Vehicle Damage Claim",
+    incidentDate: "2026-07-30",
+    incidentLocation: "Belt Line Rd & Rochelle Blvd",
+    dept: "Public Works",
+    claimantName: "Alan Foster",
+    initialDemand: 5600,
+    status: "Under Review",
+  },
+  {
+    id: "c6",
+    claimNumber: "CLM-2026-063",
+    title: "Municipal Pool Slip & Fall Personal Injury Claim",
+    incidentDate: "2026-07-18",
+    incidentLocation: "Georgia Farrow Recreation Center",
+    dept: "Parks & Recreation",
+    claimantName: "Renee Castillo",
+    initialDemand: 15750,
+    status: "Settled",
+  },
+  {
+    id: "c7",
+    claimNumber: "CLM-2026-058",
+    title: "Storm Debris Property Damage Claim (Delaware Creek)",
+    incidentDate: "2026-07-10",
+    incidentLocation: "Delaware Creek",
+    dept: "Public Works",
+    claimantName: "Yusuf Okafor",
+    initialDemand: 9800,
+    status: "Investigation",
+  },
+];
+
+export const initialMatters: Matter[] = [
   {
     id: "m2",
     caseNumber: "CNT-2026-014",
@@ -89,84 +174,6 @@ export const initialMatters: Matter[] = [
     status: "Briefing",
     exposure: null,
     exposureLabel: "Injunction Risk",
-    pendingCouncil: false,
-  },
-  {
-    id: "m4",
-    caseNumber: "CLM-2026-091",
-    title: "Sidewalk Trip & Fall Injury Claim (Rock Island Rd)",
-    type: "Tort Claim",
-    dept: "Parks & Recreation",
-    targetDate: "2026-09-26",
-    deadlineType: "TTCA Notice",
-    status: "Under Review",
-    exposure: 12500,
-    exposureLabel: "$12,500",
-    pendingCouncil: false,
-  },
-  {
-    id: "m5",
-    caseNumber: "CLM-2026-084",
-    title: "Water Main Break Property Flooding Claim (Story Rd)",
-    type: "Tort Claim",
-    dept: "Public Works",
-    targetDate: "2026-10-21",
-    deadlineType: "TTCA Notice",
-    status: "Investigation",
-    exposure: 8900,
-    exposureLabel: "$8,900",
-    pendingCouncil: false,
-  },
-  {
-    id: "m6",
-    caseNumber: "CLM-2026-077",
-    title: "Fleet Vehicle Collision - Third Party Damage",
-    type: "Tort Claim",
-    dept: "Fleet Services",
-    targetDate: "2026-10-28",
-    deadlineType: "TTCA Notice",
-    status: "Investigation",
-    exposure: 22000,
-    exposureLabel: "$22,000",
-    pendingCouncil: false,
-  },
-  {
-    id: "m7",
-    caseNumber: "CLM-2026-070",
-    title: "Traffic Signal Malfunction Vehicle Damage Claim",
-    type: "Tort Claim",
-    dept: "Public Works",
-    targetDate: "2026-10-15",
-    deadlineType: "TTCA Notice",
-    status: "Under Review",
-    exposure: 5600,
-    exposureLabel: "$5,600",
-    pendingCouncil: false,
-  },
-  {
-    id: "m8",
-    caseNumber: "CLM-2026-063",
-    title: "Municipal Pool Slip & Fall Personal Injury Claim",
-    type: "Tort Claim",
-    dept: "Parks & Recreation",
-    targetDate: "2026-11-01",
-    deadlineType: "TTCA Notice",
-    status: "Closed - Settled",
-    exposure: 15750,
-    exposureLabel: "$15,750",
-    pendingCouncil: false,
-  },
-  {
-    id: "m9",
-    caseNumber: "CLM-2026-058",
-    title: "Storm Debris Property Damage Claim (Delaware Creek)",
-    type: "Tort Claim",
-    dept: "Public Works",
-    targetDate: "2026-11-08",
-    deadlineType: "TTCA Notice",
-    status: "Investigation",
-    exposure: 9800,
-    exposureLabel: "$9,800",
     pendingCouncil: false,
   },
   {
@@ -292,7 +299,6 @@ export type FilterKey = "All" | MatterType;
 
 export const filterPills: { key: FilterKey; label: string }[] = [
   { key: "All", label: "All Matters" },
-  { key: "Tort Claim", label: "Tort Claims" },
   { key: "Vendor Contract", label: "Vendor Contracts" },
   { key: "Ordinance", label: "Ordinances" },
   { key: "Civil Action", label: "Civil Actions" },
@@ -305,6 +311,8 @@ export interface IngestedDoc {
   tags: { label: string; tone: "neutral" | "warning" | "success" }[];
   status: string;
   progress: number;
+  claimId?: string;
+  matterId?: string;
 }
 
 export const initialDocs: IngestedDoc[] = [
@@ -319,6 +327,7 @@ export const initialDocs: IngestedDoc[] = [
     ],
     status: "Indexed",
     progress: 100,
+    claimId: "c1",
   },
   {
     id: "d2",
@@ -330,6 +339,7 @@ export const initialDocs: IngestedDoc[] = [
     ],
     status: "Action Required",
     progress: 100,
+    claimId: "c1",
   },
   {
     id: "d3",
@@ -341,6 +351,7 @@ export const initialDocs: IngestedDoc[] = [
     ],
     status: "Matched",
     progress: 100,
+    claimId: "c1",
   },
   {
     id: "d4",
@@ -352,6 +363,7 @@ export const initialDocs: IngestedDoc[] = [
     ],
     status: "Linked",
     progress: 100,
+    claimId: "c1",
   },
 ];
 
@@ -371,11 +383,23 @@ export const matterCategories = [
   "Civil Lawsuit",
 ];
 
+export function isClaimCategory(category: string): boolean {
+  return category.startsWith("Tort");
+}
+
 export function categoryToType(category: string): MatterType {
-  if (category.startsWith("Tort")) return "Tort Claim";
   if (category.startsWith("Vendor")) return "Vendor Contract";
   if (category.startsWith("Municipal")) return "Ordinance";
   return "Civil Action";
+}
+
+export function formatShortDate(iso: string): string {
+  return new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 export interface AuditLogEntry {
@@ -391,7 +415,7 @@ export const initialAuditLog: AuditLogEntry[] = [
     id: "a1",
     timestamp: "2026-09-15T09:12:00Z",
     user: "Andy Chang",
-    action: "Created matter",
+    action: "Created claim",
     targetEntity: "CLM-2026-089",
   },
   {

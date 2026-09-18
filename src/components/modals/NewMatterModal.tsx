@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/Button";
 import {
   categoryToType,
   departments,
+  isClaimCategory,
   matterCategories,
+  Claim,
   Matter,
   TODAY,
 } from "@/lib/data";
@@ -17,25 +19,31 @@ let trackingSeq = 904;
 export function NewMatterModal({
   open,
   onClose,
-  onCreate,
+  onCreateMatter,
+  onCreateClaim,
 }: {
   open: boolean;
   onClose: () => void;
-  onCreate: (matter: Matter) => void;
+  onCreateMatter: (matter: Matter) => void;
+  onCreateClaim: (claim: Claim) => void;
 }) {
   const [dept, setDept] = useState(departments[0]);
   const [category, setCategory] = useState(matterCategories[0]);
   const [title, setTitle] = useState("");
+  const [claimantName, setClaimantName] = useState("");
   const [date, setDate] = useState("");
   const [value, setValue] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [tracking, setTracking] = useState<string | null>(null);
 
+  const isClaim = isClaimCategory(category);
+
   function reset() {
     setDept(departments[0]);
     setCategory(matterCategories[0]);
     setTitle("");
+    setClaimantName("");
     setDate("");
     setValue("");
     setFileName(null);
@@ -51,23 +59,33 @@ export function NewMatterModal({
     e.preventDefault();
     if (!title.trim()) return;
 
+    const numericValue = Number(value.replace(/[^0-9.]/g, "")) || 0;
+
+    if (isClaim) {
+      trackingSeq += 1;
+      const trackingCode = `IRV-2026-CLM-${trackingSeq}`;
+      const newClaim: Claim = {
+        id: `c-${Date.now()}`,
+        claimNumber: `CLM-2026-${trackingSeq}`,
+        title: title.trim(),
+        incidentDate: date || TODAY.toISOString().slice(0, 10),
+        incidentLocation: "Location on file",
+        dept,
+        claimantName: claimantName.trim() || "Citizen Claimant",
+        initialDemand: numericValue,
+        status: "Notice Filed",
+      };
+      onCreateClaim(newClaim);
+      setTracking(trackingCode);
+      return;
+    }
+
     const type = categoryToType(category);
-    const prefix =
-      type === "Tort Claim"
-        ? "CLM"
-        : type === "Vendor Contract"
-        ? "CNT"
-        : type === "Ordinance"
-        ? "ORD"
-        : "LIT";
+    const prefix = type === "Vendor Contract" ? "CNT" : type === "Ordinance" ? "ORD" : "LIT";
     trackingSeq += 1;
     const trackingCode = `IRV-2026-${prefix}-${trackingSeq}`;
-
-    const numericValue = Number(value.replace(/[^0-9.]/g, "")) || 0;
     const deadlineType =
-      type === "Tort Claim"
-        ? "TTCA Notice"
-        : type === "Vendor Contract"
+      type === "Vendor Contract"
         ? "Council Agenda"
         : type === "Ordinance"
         ? "Municipal Court"
@@ -90,7 +108,7 @@ export function NewMatterModal({
       pendingCouncil: type === "Vendor Contract",
     };
 
-    onCreate(newMatter);
+    onCreateMatter(newMatter);
     setTracking(trackingCode);
   }
 
@@ -98,8 +116,12 @@ export function NewMatterModal({
     <Modal
       open={open}
       onClose={handleClose}
-      title="New Matter Intake"
-      description="Route a new legal matter to the Office of the City Attorney"
+      title={isClaim ? "New Claim Intake" : "New Matter Intake"}
+      description={
+        isClaim
+          ? "Log a new administrative tort claim for triage and review"
+          : "Route a new legal matter to the Office of the City Attorney"
+      }
     >
       {tracking ? (
         <div className="space-y-4">
@@ -107,14 +129,16 @@ export function NewMatterModal({
             <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-emerald-800">
-                Matter intake submitted successfully
+                {isClaim ? "Claim intake submitted successfully" : "Matter intake submitted successfully"}
               </p>
               <p className="text-xs text-emerald-700 mt-1">
                 Tracking Code:{" "}
                 <span className="font-mono font-semibold">{tracking}</span>
               </p>
               <p className="text-xs text-emerald-700 mt-1">
-                Added to the Litigation &amp; Claims Docket. Metrics updated.
+                {isClaim
+                  ? "Added to Claims Intake & Triage. Metrics updated."
+                  : "Added to the Litigation & Claims Docket. Metrics updated."}
               </p>
             </div>
           </div>
@@ -148,7 +172,7 @@ export function NewMatterModal({
             </select>
           </Field>
 
-          <Field label="Matter Title / Subject">
+          <Field label={isClaim ? "Claim Title / Subject" : "Matter Title / Subject"}>
             <input
               required
               type="text"
@@ -158,6 +182,18 @@ export function NewMatterModal({
               onChange={(e) => setTitle(e.target.value)}
             />
           </Field>
+
+          {isClaim && (
+            <Field label="Claimant Name">
+              <input
+                type="text"
+                placeholder="e.g. Jordan Alvarez"
+                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0b2340]/20 focus:border-[#0b2340]"
+                value={claimantName}
+                onChange={(e) => setClaimantName(e.target.value)}
+              />
+            </Field>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Statutory Date of Loss / Target Council Date">
@@ -220,7 +256,7 @@ export function NewMatterModal({
               Cancel
             </Button>
             <Button type="submit" className="flex-1">
-              Submit Matter Intake
+              {isClaim ? "Submit Claim Intake" : "Submit Matter Intake"}
             </Button>
           </div>
         </form>

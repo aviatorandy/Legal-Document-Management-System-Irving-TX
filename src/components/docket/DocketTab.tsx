@@ -33,7 +33,6 @@ const statusTone: Record<MatterStatus, "slate" | "amber" | "blue" | "green" | "r
 };
 
 const typeTone: Record<string, "navy" | "blue" | "amber" | "zinc"> = {
-  "Tort Claim": "amber",
   "Vendor Contract": "blue",
   Ordinance: "zinc",
   "Civil Action": "navy",

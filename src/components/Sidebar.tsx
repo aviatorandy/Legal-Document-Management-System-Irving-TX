@@ -1,12 +1,21 @@
 "use client";
 
-import { Scale, Gavel, FolderInput, FileCheck2, BarChart3, ClipboardList } from "lucide-react";
+import {
+  Scale,
+  Gavel,
+  FileWarning,
+  FolderInput,
+  FileCheck2,
+  BarChart3,
+  ClipboardList,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type TabKey = "docket" | "ingestion" | "contract" | "reporting" | "audit";
+export type TabKey = "docket" | "claims" | "ingestion" | "contract" | "reporting" | "audit";
 
 export const tabs: { key: TabKey; label: string; icon: typeof Gavel }[] = [
-  { key: "docket", label: "Litigation & Claims Docket", icon: Gavel },
+  { key: "docket", label: "Litigation & Matters Docket", icon: Gavel },
+  { key: "claims", label: "Claims Intake & Triage", icon: FileWarning },
   { key: "ingestion", label: "Document Ingestion & Triage", icon: FolderInput },
   { key: "contract", label: "Contract Compliance Studio", icon: FileCheck2 },
   { key: "reporting", label: "Reporting & Analytics", icon: BarChart3 },

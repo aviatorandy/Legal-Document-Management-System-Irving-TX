@@ -3,7 +3,7 @@
 import { ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { GlobalSearch } from "@/components/GlobalSearch";
-import { Matter } from "@/lib/data";
+import { Claim, Matter } from "@/lib/data";
 import { tabs, TabKey } from "@/components/Sidebar";
 
 function StatusPill({ color, label }: { color: "green" | "blue" | "purple"; label: string }) {
@@ -19,12 +19,16 @@ function StatusPill({ color, label }: { color: "green" | "blue" | "purple"; labe
 export function TopBar({
   activeTab,
   matters,
+  claims,
   onSelectMatter,
+  onSelectClaim,
   onNewMatter,
 }: {
   activeTab: TabKey;
   matters: Matter[];
+  claims: Claim[];
   onSelectMatter: (matter: Matter) => void;
+  onSelectClaim: (claim: Claim) => void;
   onNewMatter: () => void;
 }) {
   const activeLabel = tabs.find((t) => t.key === activeTab)?.label ?? "";
@@ -55,10 +59,15 @@ export function TopBar({
       </div>
 
       <div className="px-6 pb-3.5 flex flex-col md:flex-row items-stretch md:items-center gap-3">
-        <GlobalSearch matters={matters} onSelect={onSelectMatter} />
+        <GlobalSearch
+          matters={matters}
+          claims={claims}
+          onSelectMatter={onSelectMatter}
+          onSelectClaim={onSelectClaim}
+        />
         <Button className="md:ml-auto" onClick={onNewMatter}>
           <Plus className="h-4 w-4" />
-          New Matter Intake
+          New Intake
         </Button>
       </div>
     </header>

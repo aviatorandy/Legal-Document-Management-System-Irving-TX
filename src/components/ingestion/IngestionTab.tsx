@@ -6,6 +6,7 @@ import {
   Sparkles,
   FileText,
   ShieldCheck,
+  ShieldAlert,
   Loader2,
   CheckCircle2,
   ImageIcon,
@@ -33,15 +34,19 @@ export function IngestionTab({
   onRedact,
   onNotify,
   onAudit,
+  linkedMatterNumber,
 }: {
   docs: IngestedDoc[];
   onRedact: () => void;
   onNotify: (title: string, description?: string) => void;
   onAudit: (action: string, target: string) => void;
+  linkedMatterNumber?: string;
 }) {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dragOver, setDragOver] = useState(false);
+
+  const actionNeededDoc = docs.find((d) => d.status === "Action Required");
 
   function runTriage() {
     if (running) return;
@@ -74,6 +79,11 @@ export function IngestionTab({
           <p className="text-sm text-slate-500 mt-0.5">
             Pothole & Axle Structural Damage (MacArthur Blvd) — Public Works
           </p>
+          {linkedMatterNumber && (
+            <p className="text-xs font-medium text-purple-700 mt-1">
+              Linked to litigation matter {linkedMatterNumber} — escalated from this claim
+            </p>
+          )}
         </div>
         <Button variant="primary" onClick={runTriage} disabled={running}>
           {running ? (
@@ -84,6 +94,24 @@ export function IngestionTab({
           Run Concourse AI Document Triage
         </Button>
       </div>
+
+      {actionNeededDoc && (
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3.5">
+          <ShieldAlert className="h-5 w-5 text-amber-600 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-900">
+              Action required: juvenile PII detected in {actionNeededDoc.fileName}
+            </p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              This document cannot be released in response to a public records request until redacted.
+            </p>
+          </div>
+          <Button variant="danger" size="sm" onClick={onRedact} className="shrink-0">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Redact Now with Adobe Pro
+          </Button>
+        </div>
+      )}
 
       <div
         onDragOver={(e) => {
@@ -157,7 +185,9 @@ export function IngestionTab({
                 return (
                   <tr
                     key={d.id}
-                    className="border-b border-slate-100 last:border-0"
+                    className={`border-b border-slate-100 last:border-0 ${
+                      d.status === "Action Required" ? "bg-amber-50/60" : ""
+                    }`}
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -207,9 +237,9 @@ export function IngestionTab({
                     </td>
                     <td className="px-4 py-3">
                       {d.id === "d2" && d.status !== "Redacted & Signed" && (
-                        <Button size="sm" variant="secondary" onClick={onRedact}>
+                        <Button size="sm" variant="danger" onClick={onRedact}>
                           <ShieldCheck className="h-3.5 w-3.5" />
-                          One-Click Adobe Pro PII Redaction
+                          Redact Now
                         </Button>
                       )}
                     </td>
