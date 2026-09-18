@@ -84,7 +84,7 @@ export function AppShell() {
     logAudit("Created claim", claim.claimNumber);
   }
 
-  function handleRedact() {
+  function handleRedactFinalize(acceptedCount: number) {
     setDocs((prev) =>
       prev.map((d) =>
         d.id === "d2"
@@ -92,18 +92,13 @@ export function AppShell() {
               ...d,
               status: "Redacted & Signed",
               tags: [
-                { label: "PII Redacted", tone: "success" },
+                { label: `${acceptedCount} Items Redacted`, tone: "success" },
                 { label: "Adobe Pro Signed", tone: "success" },
               ],
             }
           : d
       )
     );
-    notify(
-      "Adobe Pro PII Redaction complete",
-      "Juvenile PII redacted and document digitally signed."
-    );
-    logAudit("Redacted PII and applied Adobe Pro digital signature", "CLM-2026-089");
   }
 
   function handleEscalate(claim: Claim) {
@@ -202,7 +197,7 @@ export function AppShell() {
           {activeTab === "ingestion" && (
             <IngestionTab
               docs={docs}
-              onRedact={handleRedact}
+              onRedactFinalize={handleRedactFinalize}
               onNotify={notify}
               onAudit={logAudit}
               linkedMatterNumber={convertedMatterNumber}

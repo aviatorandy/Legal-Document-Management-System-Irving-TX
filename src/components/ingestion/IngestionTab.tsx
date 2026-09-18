@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { RedactionReviewModal } from "@/components/RedactionReviewModal";
 import { IngestedDoc } from "@/lib/data";
 
 const iconFor = (docType: string) => {
@@ -31,13 +32,13 @@ const toneClass: Record<string, string> = {
 
 export function IngestionTab({
   docs,
-  onRedact,
+  onRedactFinalize,
   onNotify,
   onAudit,
   linkedMatterNumber,
 }: {
   docs: IngestedDoc[];
-  onRedact: () => void;
+  onRedactFinalize: (acceptedCount: number) => void;
   onNotify: (title: string, description?: string) => void;
   onAudit: (action: string, target: string) => void;
   linkedMatterNumber?: string;
@@ -45,6 +46,7 @@ export function IngestionTab({
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dragOver, setDragOver] = useState(false);
+  const [redactionModalOpen, setRedactionModalOpen] = useState(false);
 
   const actionNeededDoc = docs.find((d) => d.status === "Action Required");
 
@@ -106,9 +108,14 @@ export function IngestionTab({
               This document cannot be released in response to a public records request until redacted.
             </p>
           </div>
-          <Button variant="danger" size="sm" onClick={onRedact} className="shrink-0">
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => setRedactionModalOpen(true)}
+            className="shrink-0"
+          >
             <ShieldCheck className="h-3.5 w-3.5" />
-            Redact Now with Adobe Pro
+            Redact &amp; Produce
           </Button>
         </div>
       )}
@@ -237,9 +244,9 @@ export function IngestionTab({
                     </td>
                     <td className="px-4 py-3">
                       {d.id === "d2" && d.status !== "Redacted & Signed" && (
-                        <Button size="sm" variant="danger" onClick={onRedact}>
+                        <Button size="sm" variant="danger" onClick={() => setRedactionModalOpen(true)}>
                           <ShieldCheck className="h-3.5 w-3.5" />
-                          Redact Now
+                          Redact &amp; Produce
                         </Button>
                       )}
                     </td>
@@ -250,6 +257,29 @@ export function IngestionTab({
           </table>
         </div>
       </div>
+
+      <RedactionReviewModal
+        open={redactionModalOpen}
+        docLabel="Irving_PD_Incident_Report_902.pdf"
+        onClose={() => setRedactionModalOpen(false)}
+        onFinalize={(acceptedCount) => {
+          onRedactFinalize(acceptedCount);
+          onAudit(
+            `Applied ${acceptedCount} statutory redactions to Doc #IRV-2026-8819 [User: Paralegal]`,
+            "CLM-2026-089"
+          );
+          onNotify(
+            "Redacted copy generated: Incident_Report_REDACTED.pdf",
+            "Underlying metadata stripped."
+          );
+        }}
+        onDownload={() =>
+          onNotify(
+            "Download started",
+            "Incident_Report_REDACTED.pdf saved to your downloads."
+          )
+        }
+      />
     </div>
   );
 }
