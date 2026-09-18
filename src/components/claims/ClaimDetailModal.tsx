@@ -1,10 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, FileText, Gavel, FileX, Handshake } from "lucide-react";
+import { ArrowRight, Gavel, FileX, Handshake } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { RedactionReviewModal } from "@/components/RedactionReviewModal";
+import {
+  isRedactableDoc,
+  LinkedDocumentsList,
+} from "@/components/documents/LinkedDocumentsList";
 import {
   AuditLogEntry,
   Claim,
@@ -22,6 +27,7 @@ export function ClaimDetailModal({
   onUpdateClaim,
   onAudit,
   onNotify,
+  onRedactFinalize,
 }: {
   claim: Claim | null;
   docs: IngestedDoc[];
@@ -31,10 +37,20 @@ export function ClaimDetailModal({
   onUpdateClaim: (claim: Claim) => void;
   onAudit: (action: string, target: string) => void;
   onNotify: (title: string, description?: string) => void;
+  onRedactFinalize: (acceptedCount: number) => void;
 }) {
   const [confirming, setConfirming] = useState(false);
+  const [redactingDoc, setRedactingDoc] = useState<IngestedDoc | null>(null);
 
   if (!claim) return null;
+
+  function handlePreview(doc: IngestedDoc) {
+    if (isRedactableDoc(doc)) {
+      setRedactingDoc(doc);
+    } else {
+      onNotify(`Previewing ${doc.fileName}`, "Read-only preview.");
+    }
+  }
 
   const linkedDocs = docs.filter((d) => d.claimId === claim.id);
   const alreadyConverted = claim.status === "Converted to Litigation";
@@ -93,14 +109,7 @@ export function ClaimDetailModal({
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
               Linked Documents ({linkedDocs.length})
             </p>
-            <ul className="space-y-1.5">
-              {linkedDocs.map((d) => (
-                <li key={d.id} className="flex items-center gap-2 text-sm text-slate-700">
-                  <FileText className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate">{d.fileName}</span>
-                </li>
-              ))}
-            </ul>
+            <LinkedDocumentsList docs={linkedDocs} onPreview={handlePreview} />
           </div>
         )}
 
@@ -203,6 +212,29 @@ export function ClaimDetailModal({
           </div>
         )}
       </div>
+
+      <RedactionReviewModal
+        open={!!redactingDoc}
+        docLabel={redactingDoc?.fileName ?? ""}
+        onClose={() => setRedactingDoc(null)}
+        onFinalize={(acceptedCount) => {
+          onRedactFinalize(acceptedCount);
+          onAudit(
+            `Applied ${acceptedCount} statutory redactions to Doc #IRV-2026-8819 [User: Paralegal]`,
+            claim.claimNumber
+          );
+          onNotify(
+            "Redacted copy generated: Incident_Report_REDACTED.pdf",
+            "Underlying metadata stripped."
+          );
+        }}
+        onDownload={() =>
+          onNotify(
+            "Download started",
+            "Incident_Report_REDACTED.pdf saved to your downloads."
+          )
+        }
+      />
     </Modal>
   );
 }
