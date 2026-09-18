@@ -13,6 +13,7 @@ import { ContractTab } from "@/components/contract/ContractTab";
 import { ReportingTab } from "@/components/reporting/ReportingTab";
 import { AuditLogTab } from "@/components/audit/AuditLogTab";
 import { NewMatterModal } from "@/components/modals/NewMatterModal";
+import { OutlookFilingDrawer } from "@/components/OutlookFilingDrawer";
 import {
   initialMatters,
   initialClaims,
@@ -25,6 +26,7 @@ import {
   formatCurrency,
   TODAY,
 } from "@/lib/data";
+import { Role, roleTabAccess } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 
 let toastSeq = 1;
@@ -41,6 +43,16 @@ export function AppShell() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [selectedMatterId, setSelectedMatterId] = useState<string | null>(null);
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
+  const [role, setRole] = useState<Role>("City Attorney");
+  const [outlookOpen, setOutlookOpen] = useState(false);
+  const visibleTabs = roleTabAccess[role];
+
+  function handleRoleChange(newRole: Role) {
+    setRole(newRole);
+    if (!roleTabAccess[newRole].includes(activeTab)) {
+      setActiveTab(roleTabAccess[newRole][0]);
+    }
+  }
 
   function notify(title: string, description?: string) {
     const id = toastSeq++;
@@ -63,7 +75,7 @@ export function AppShell() {
   }
 
   function handleOpenMatter(matter: Matter) {
-    if (matter.id === "m2") {
+    if (matter.id === "m2" && roleTabAccess[role].includes("contract")) {
       setActiveTab("contract");
       return;
     }
@@ -153,27 +165,70 @@ export function AppShell() {
     setSelectedMatterId(newMatter.id);
   }
 
+  function handleFileFromOutlook(
+    target: { kind: "matter" | "claim"; id: string; caseNumber: string },
+    saveBody: boolean,
+    saveAttachment: boolean
+  ) {
+    const newDocs: IngestedDoc[] = [];
+    const ownerField = target.kind === "matter" ? { matterId: target.id } : { claimId: target.id };
+    if (saveAttachment) {
+      newDocs.push({
+        id: `outlook-${Date.now()}-1`,
+        fileName: "Answer_and_Counterclaim.pdf",
+        docType: "Correspondence Attachment",
+        tags: [{ label: "Filed via Outlook Add-In", tone: "neutral" }],
+        status: "Indexed",
+        progress: 100,
+        ...ownerField,
+      });
+    }
+    if (saveBody) {
+      newDocs.push({
+        id: `outlook-${Date.now()}-2`,
+        fileName: "Email_Correspondence_Klein_Associates.pdf",
+        docType: "Correspondence",
+        tags: [{ label: "Filed via Outlook Add-In", tone: "neutral" }],
+        status: "Indexed",
+        progress: 100,
+        ...ownerField,
+      });
+    }
+    setDocs((prev) => [...prev, ...newDocs]);
+    logAudit(
+      `Filed email correspondence from Outlook (${newDocs.length} item${newDocs.length === 1 ? "" : "s"})`,
+      target.caseNumber
+    );
+    notify(
+      `Filed to ${target.caseNumber}`,
+      "Document repository updated from Outlook 365 Add-In."
+    );
+  }
+
   const selectedMatter = matters.find((m) => m.id === selectedMatterId) ?? null;
   const selectedClaim = claims.find((c) => c.id === selectedClaimId) ?? null;
   const convertedMatterNumber = claims.find((c) => c.id === "c1")?.linkedMatterId;
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <Sidebar activeTab={activeTab} onSelect={setActiveTab} />
+      <Sidebar activeTab={activeTab} visibleTabs={visibleTabs} onSelect={setActiveTab} />
 
       <div className="flex-1 min-w-0 flex flex-col">
         <TopBar
           activeTab={activeTab}
           matters={matters}
           claims={claims}
+          role={role}
+          onRoleChange={handleRoleChange}
           onSelectMatter={handleOpenMatter}
           onSelectClaim={handleOpenClaim}
           onNewMatter={() => setModalOpen(true)}
+          onOpenOutlook={() => setOutlookOpen(true)}
         />
 
         <div className="lg:hidden border-b border-slate-200 bg-white px-4">
           <nav className="flex items-center gap-1 overflow-x-auto">
-            {tabs.map((t) => {
+            {tabs.filter((t) => visibleTabs.includes(t.key)).map((t) => {
               const Icon = t.icon;
               const active = activeTab === t.key;
               return (
@@ -212,7 +267,12 @@ export function AppShell() {
             />
           )}
           {activeTab === "contract" && (
-            <ContractTab onNotify={notify} onAudit={logAudit} />
+            <ContractTab
+              matter={matters.find((m) => m.id === "m2")!}
+              onNotify={notify}
+              onAudit={logAudit}
+              onUpdateMatter={handleUpdateMatter}
+            />
           )}
           {activeTab === "reporting" && <ReportingTab matters={matters} />}
           {activeTab === "audit" && <AuditLogTab entries={auditLog} />}
@@ -246,6 +306,14 @@ export function AppShell() {
         onUpdateMatter={handleUpdateMatter}
         onAudit={logAudit}
         onNotify={notify}
+      />
+
+      <OutlookFilingDrawer
+        open={outlookOpen}
+        onClose={() => setOutlookOpen(false)}
+        matters={matters}
+        claims={claims}
+        onFile={handleFileFromOutlook}
       />
 
       <ToastViewport toasts={toasts} onDismiss={dismissToast} />

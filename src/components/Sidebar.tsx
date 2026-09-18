@@ -24,11 +24,15 @@ export const tabs: { key: TabKey; label: string; icon: typeof Gavel }[] = [
 
 export function Sidebar({
   activeTab,
+  visibleTabs,
   onSelect,
 }: {
   activeTab: TabKey;
+  visibleTabs: TabKey[];
   onSelect: (key: TabKey) => void;
 }) {
+  const visible = tabs.filter((t) => visibleTabs.includes(t.key));
+
   return (
     <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-slate-100">
@@ -42,7 +46,7 @@ export function Sidebar({
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {tabs.map((t) => {
+        {visible.map((t) => {
           const Icon = t.icon;
           const active = activeTab === t.key;
           return (
