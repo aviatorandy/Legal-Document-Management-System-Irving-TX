@@ -34,7 +34,7 @@ export function Sidebar({
   const visible = tabs.filter((t) => visibleTabs.includes(t.key));
 
   return (
-    <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
+    <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-slate-100">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0b2340]">
           <Scale className="h-4.5 w-4.5 text-white" />
@@ -54,14 +54,14 @@ export function Sidebar({
               key={t.key}
               onClick={() => onSelect(t.key)}
               className={cn(
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors text-left",
+                "flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors text-left",
                 active
                   ? "bg-[#0b2340] text-white"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               )}
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t.label}</span>
+              <Icon className="h-4 w-4 shrink-0 mt-0.5" />
+              <span className="leading-snug">{t.label}</span>
             </button>
           );
         })}

@@ -64,7 +64,7 @@ export function IngestionTab({
         setRunning(false);
         onNotify(
           "Concourse AI Document Triage complete",
-          "All 4 documents extracted & synced to M365 SharePoint."
+          "All 4 documents extracted & queued for M365 SharePoint sync."
         );
         onAudit("Ran AI document triage (4 files)", "CLM-2026-089");
       }
@@ -160,7 +160,7 @@ export function IngestionTab({
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="font-medium text-slate-700">
-              Extracting metadata & syncing to M365...
+              Extracting metadata & queuing for M365 sync...
             </span>
             <span className="text-slate-500">{progress}%</span>
           </div>
@@ -223,7 +223,7 @@ export function IngestionTab({
                       {d.progress >= 100 ? (
                         <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
                           <CheckCircle2 className="h-3.5 w-3.5" />
-                          100% Extracted & Synced to M365
+                          Extracted — Ready for M365 Sync
                         </span>
                       ) : (
                         <span className="text-xs text-slate-400">Pending triage</span>

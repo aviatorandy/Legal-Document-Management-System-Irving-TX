@@ -92,9 +92,9 @@ export function DocketTab({
         />
         <MetricCard
           icon={AlertTriangle}
-          label="Urgent Texas SLAs (< 15 Days)"
+          label="Urgent Deadlines (<15 Days)"
           value={String(urgentSlaCount)}
-          sub="Claims requiring immediate statutory notice/answer"
+          sub="Matters requiring immediate action"
           tone="danger"
         />
         <MetricCard
@@ -132,7 +132,7 @@ export function DocketTab({
                 <th className="px-4 py-3">Matter</th>
                 <th className="px-4 py-3">Type</th>
                 <th className="px-4 py-3">Dept</th>
-                <th className="px-4 py-3">Texas SLA</th>
+                <th className="px-4 py-3">Deadline / Milestone</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-right">Financial Exposure</th>
                 <th className="px-4 py-3" />
