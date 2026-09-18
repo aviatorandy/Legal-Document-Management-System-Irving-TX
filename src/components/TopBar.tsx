@@ -61,12 +61,22 @@ export function TopBar({
           >
             <Mail className="h-4 w-4" />
           </button>
-          <div className="relative">
+          <div className="relative flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 pl-1 pr-7 py-1">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0b2340] text-white text-[10px] font-semibold">
+              {persona.initials}
+            </div>
+            <div className="hidden sm:block leading-tight min-w-0">
+              <div className="text-[11px] font-semibold text-slate-800 truncate">
+                {persona.name}
+              </div>
+              <div className="text-[10px] text-slate-500 truncate">{role}</div>
+            </div>
+            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
             <select
               value={role}
               onChange={(e) => onRoleChange(e.target.value as Role)}
-              className="appearance-none flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 pl-1 pr-7 py-1 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0b2340]/20"
-              style={{ minWidth: 0 }}
+              aria-label="Switch role"
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
             >
               {(Object.keys(personas) as Role[]).map((r) => (
                 <option key={r} value={r}>
@@ -74,18 +84,6 @@ export function TopBar({
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-1 pr-7">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0b2340] text-white text-[10px] font-semibold">
-                {persona.initials}
-              </div>
-              <div className="hidden sm:block leading-tight min-w-0">
-                <div className="text-[11px] font-semibold text-slate-800 truncate">
-                  {persona.name}
-                </div>
-                <div className="text-[10px] text-slate-500 truncate">{role}</div>
-              </div>
-            </div>
-            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
           </div>
         </div>
       </div>
