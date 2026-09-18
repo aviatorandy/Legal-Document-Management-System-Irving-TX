@@ -157,7 +157,9 @@ export function MatterDetailModal({
             <p className="font-medium text-slate-800">Andy Chang, ACA</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400">Financial Exposure</p>
+            <p className="text-xs text-slate-400">
+              {matter.caseNumber.startsWith("CNT") ? "Contract Value" : "Financial Exposure"}
+            </p>
             <p className="font-medium text-slate-800">
               {matter.exposure !== null ? formatCurrency(matter.exposure) : matter.exposureLabel}
             </p>
@@ -258,8 +260,8 @@ export function MatterDetailModal({
                 onClick={() =>
                   act(
                     { status: "Awaiting Council", pendingCouncil: true },
-                    "Approved for City Council Agenda",
-                    "Added to Oct 14 Council Agenda packet"
+                    "Approved for Oct 14 City Council Agenda packet",
+                    `Contract ${matter.caseNumber} approved and routed to City Secretary for Council Agenda.`
                   )
                 }
               >

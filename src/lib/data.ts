@@ -228,7 +228,7 @@ export const initialMatters: Matter[] = [
     dept: "Police",
     targetDate: "2026-10-01",
     deadlineType: "Council Agenda",
-    status: "Awaiting Council",
+    status: "Legal Redline",
     exposure: 120000,
     exposureLabel: "$120,000",
     pendingCouncil: true,
@@ -400,6 +400,33 @@ export const initialDocs: IngestedDoc[] = [
     progress: 100,
     matterId: "m17",
   },
+  {
+    id: "d8",
+    fileName: "Axon_Evidence_Platform_Agreement.pdf",
+    docType: "Vendor Contract",
+    tags: [{ label: "Value: $120,000", tone: "neutral" }],
+    status: "Indexed",
+    progress: 100,
+    matterId: "m13",
+  },
+  {
+    id: "d9",
+    fileName: "TGC_2271_Compliance_Verification.pdf",
+    docType: "Statutory Compliance",
+    tags: [{ label: "Tex. Gov't Code § 2271", tone: "success" }],
+    status: "Indexed",
+    progress: 100,
+    matterId: "m13",
+  },
+  {
+    id: "d10",
+    fileName: "Irving_PD_CJIS_Addendum.pdf",
+    docType: "Data Security Addendum",
+    tags: [{ label: "CJIS Compliant", tone: "success" }],
+    status: "Indexed",
+    progress: 100,
+    matterId: "m13",
+  },
 ];
 
 export const departments = [
@@ -480,6 +507,20 @@ export const initialAuditLog: AuditLogEntry[] = [
     user: "Field Officer",
     action: "Citation served to property owner",
     targetEntity: "ORD-2026-015",
+  },
+  {
+    id: "a6",
+    timestamp: "2026-09-10T09:30:00Z",
+    user: "Irving PD Contracts Liaison",
+    action: "Department contract submission by Irving PD",
+    targetEntity: "CNT-2026-003",
+  },
+  {
+    id: "a7",
+    timestamp: "2026-09-14T15:45:00Z",
+    user: "Andy Chang",
+    action: "Legal redlines and indemnity review completed",
+    targetEntity: "CNT-2026-003",
   },
 ];
 
