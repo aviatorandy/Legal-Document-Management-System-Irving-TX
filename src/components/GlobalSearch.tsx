@@ -83,7 +83,7 @@ export function GlobalSearch({
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
-          placeholder="Search case #, claim #, title, or department..."
+          placeholder="Search docket, claims, or council contracts..."
           className="w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-9 pr-8 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0b2340]/20 focus:border-[#0b2340] focus:bg-white transition-colors"
         />
         {query && (

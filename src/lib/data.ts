@@ -64,11 +64,13 @@ export function getDeadlineStatus(matter: Pick<Matter, "targetDate" | "deadlineT
   const daysRemaining = Math.round((target.getTime() - TODAY.getTime()) / 86400000);
   const overdue = daysRemaining < 0;
   const urgent = !overdue && daysRemaining < 15;
+  const overdueDays = Math.abs(daysRemaining);
+  const dayWord = (n: number) => (n === 1 ? "Day" : "Days");
   const label = overdue
-    ? `⚠️ OVERDUE by ${Math.abs(daysRemaining)} Days (${matter.deadlineType})`
+    ? `⚠️ OVERDUE by ${overdueDays} ${dayWord(overdueDays)} (${matter.deadlineType})`
     : urgent
-    ? `⚠️ ${daysRemaining} Days (${matter.deadlineType})`
-    : `${daysRemaining} Days (${matter.deadlineType})`;
+    ? `⚠️ ${daysRemaining} ${dayWord(daysRemaining)} (${matter.deadlineType})`
+    : `${daysRemaining} ${dayWord(daysRemaining)} (${matter.deadlineType})`;
   return { daysRemaining, urgent, overdue, label };
 }
 
@@ -174,9 +176,9 @@ export const initialMatters: Matter[] = [
     dept: "Planning",
     targetDate: "2026-10-06",
     deadlineType: "Civil Court Answer",
-    status: "Briefing",
-    exposure: null,
-    exposureLabel: "Injunction Risk",
+    status: "Discovery",
+    exposure: 45000,
+    exposureLabel: "$45,000",
     pendingCouncil: false,
   },
   {
@@ -200,7 +202,7 @@ export const initialMatters: Matter[] = [
     dept: "Fleet Services",
     targetDate: "2026-10-10",
     deadlineType: "Council Agenda",
-    status: "Negotiation",
+    status: "Awaiting Council",
     exposure: 65000,
     exposureLabel: "$65,000",
     pendingCouncil: false,
@@ -368,6 +370,27 @@ export const initialDocs: IngestedDoc[] = [
     progress: 100,
     claimId: "c1",
   },
+  {
+    id: "d5",
+    fileName: "Citation_Notice_STR.pdf",
+    docType: "Code Compliance Citation",
+    tags: [
+      { label: "Repeat Violation", tone: "warning" },
+      { label: "Municipal Court", tone: "neutral" },
+    ],
+    status: "Indexed",
+    progress: 100,
+    matterId: "m15",
+  },
+  {
+    id: "d6",
+    fileName: "Field_Inspection_Photos.pdf",
+    docType: "Photographic Evidence",
+    tags: [{ label: "Site: Short-Term Rental Property", tone: "neutral" }],
+    status: "Linked",
+    progress: 100,
+    matterId: "m15",
+  },
 ];
 
 export const departments = [
@@ -434,6 +457,13 @@ export const initialAuditLog: AuditLogEntry[] = [
     user: "Andy Chang",
     action: "Opened contract redline",
     targetEntity: "CNT-2026-014",
+  },
+  {
+    id: "a4",
+    timestamp: "2026-09-14T16:20:00Z",
+    user: "Officer R. Ramirez",
+    action: "Citation issued",
+    targetEntity: "ORD-2026-021",
   },
 ];
 
