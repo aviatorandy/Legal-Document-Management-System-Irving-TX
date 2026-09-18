@@ -9,7 +9,9 @@ export type MatterStatus =
   | "Negotiation"
   | "Awaiting Council"
   | "Discovery"
-  | "Closed - Settled";
+  | "Closed - Settled"
+  | "Executed"
+  | "Closed - Compliant";
 
 export interface Matter {
   id: string;
@@ -24,6 +26,7 @@ export interface Matter {
   exposureLabel: string;
   pendingCouncil: boolean;
   linkedClaimId?: string; // set when this matter was escalated from a Claim
+  renewalAlertSet?: boolean;
 }
 
 export type ClaimStatus =

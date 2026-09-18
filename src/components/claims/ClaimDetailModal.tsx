@@ -1,22 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, FileText, Gavel } from "lucide-react";
+import { ArrowRight, FileText, Gavel, FileX, Handshake } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Claim, formatCurrency, formatShortDate, IngestedDoc } from "@/lib/data";
+import {
+  AuditLogEntry,
+  Claim,
+  formatCurrency,
+  formatShortDate,
+  IngestedDoc,
+} from "@/lib/data";
 
 export function ClaimDetailModal({
   claim,
   docs,
+  auditLog,
   onClose,
   onEscalate,
+  onUpdateClaim,
+  onAudit,
+  onNotify,
 }: {
   claim: Claim | null;
   docs: IngestedDoc[];
+  auditLog: AuditLogEntry[];
   onClose: () => void;
   onEscalate: (claim: Claim) => void;
+  onUpdateClaim: (claim: Claim) => void;
+  onAudit: (action: string, target: string) => void;
+  onNotify: (title: string, description?: string) => void;
 }) {
   const [confirming, setConfirming] = useState(false);
 
@@ -24,6 +38,17 @@ export function ClaimDetailModal({
 
   const linkedDocs = docs.filter((d) => d.claimId === claim.id);
   const alreadyConverted = claim.status === "Converted to Litigation";
+  const isTerminal =
+    alreadyConverted || claim.status === "Denied" || claim.status === "Settled";
+  const history = auditLog
+    .filter((a) => a.targetEntity === claim.claimNumber)
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  function act(update: Partial<Claim>, auditAction: string, toastTitle: string, toastDesc?: string) {
+    onUpdateClaim({ ...claim!, ...update });
+    onAudit(auditAction, claim!.claimNumber);
+    onNotify(toastTitle, toastDesc);
+  }
 
   return (
     <Modal
@@ -79,6 +104,29 @@ export function ClaimDetailModal({
           </div>
         )}
 
+        <div>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+            Activity
+          </p>
+          {history.length > 0 ? (
+            <ul className="space-y-1.5 max-h-28 overflow-y-auto">
+              {history.map((h) => (
+                <li key={h.id} className="text-sm text-slate-600">
+                  <span className="text-slate-400">
+                    {new Date(h.timestamp).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>{" "}
+                  — {h.action}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-400">No activity recorded yet.</p>
+          )}
+        </div>
+
         {alreadyConverted ? (
           <div className="rounded-lg border border-purple-200 bg-purple-50 p-4 text-sm text-purple-800">
             This claim has been converted to litigation matter{" "}
@@ -110,10 +158,49 @@ export function ClaimDetailModal({
             </div>
           </div>
         ) : (
-          <Button className="w-full justify-center" onClick={() => setConfirming(true)}>
-            Convert Claim to Litigation Matter
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          <div className="space-y-2">
+            <Button
+              className="w-full justify-center"
+              disabled={isTerminal}
+              onClick={() => setConfirming(true)}
+            >
+              Convert Claim to Litigation Matter
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isTerminal}
+                onClick={() =>
+                  act(
+                    { status: "Denied" },
+                    "Issued denial letter",
+                    "Denial letter generated",
+                    "Queued for mailing to claimant."
+                  )
+                }
+              >
+                <FileX className="h-3.5 w-3.5" />
+                Issue Denial Letter
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isTerminal}
+                onClick={() =>
+                  act(
+                    { status: "Settled" },
+                    "Authorized settlement",
+                    "Settlement authorized"
+                  )
+                }
+              >
+                <Handshake className="h-3.5 w-3.5" />
+                Authorize Settlement
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </Modal>

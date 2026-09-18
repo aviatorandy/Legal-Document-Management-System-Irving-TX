@@ -84,6 +84,14 @@ export function AppShell() {
     logAudit("Created claim", claim.claimNumber);
   }
 
+  function handleUpdateMatter(updated: Matter) {
+    setMatters((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+  }
+
+  function handleUpdateClaim(updated: Claim) {
+    setClaims((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+  }
+
   function handleRedactFinalize(acceptedCount: number) {
     setDocs((prev) =>
       prev.map((d) =>
@@ -221,8 +229,12 @@ export function AppShell() {
       <ClaimDetailModal
         claim={selectedClaim}
         docs={docs}
+        auditLog={auditLog}
         onClose={() => setSelectedClaimId(null)}
         onEscalate={handleEscalate}
+        onUpdateClaim={handleUpdateClaim}
+        onAudit={logAudit}
+        onNotify={notify}
       />
 
       <MatterDetailModal
@@ -231,6 +243,9 @@ export function AppShell() {
         auditLog={auditLog}
         claims={claims}
         onClose={() => setSelectedMatterId(null)}
+        onUpdateMatter={handleUpdateMatter}
+        onAudit={logAudit}
+        onNotify={notify}
       />
 
       <ToastViewport toasts={toasts} onDismiss={dismissToast} />
