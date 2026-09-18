@@ -8,6 +8,7 @@ import {
   Cloud,
   FileSignature,
   Gavel,
+  Circle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -22,10 +23,54 @@ interface ClauseState {
   section12: SectionStatus;
 }
 
+const pipelineStages = [
+  "Department Submission",
+  "Legal Review",
+  "City Council Agenda",
+  "Executed",
+];
+
+function PipelineStepper({ currentStage }: { currentStage: number }) {
+  return (
+    <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-3 shadow-sm overflow-x-auto">
+      {pipelineStages.map((stage, i) => {
+        const done = i < currentStage;
+        const current = i === currentStage;
+        return (
+          <div key={stage} className="flex items-center gap-1.5 shrink-0">
+            <div
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap",
+                done
+                  ? "bg-emerald-50 text-emerald-700"
+                  : current
+                  ? "bg-[#0b2340] text-white"
+                  : "bg-slate-100 text-slate-400"
+              )}
+            >
+              {done ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <Circle className="h-3.5 w-3.5" />
+              )}
+              {stage}
+            </div>
+            {i < pipelineStages.length - 1 && (
+              <div className={cn("h-px w-4", done ? "bg-emerald-300" : "bg-slate-200")} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ContractTab({
   onNotify,
+  onAudit,
 }: {
   onNotify: (title: string, description?: string) => void;
+  onAudit: (action: string, target: string) => void;
 }) {
   const [clauses, setClauses] = useState<ClauseState>({
     section4: "flagged",
@@ -33,14 +78,18 @@ export function ContractTab({
     section12: "flagged",
   });
   const [packageModalOpen, setPackageModalOpen] = useState(false);
+  const [packageGenerated, setPackageGenerated] = useState(false);
 
   const resolvedCount = Object.values(clauses).filter(
     (s) => s === "resolved"
   ).length;
 
+  const currentStage = packageGenerated ? 2 : resolvedCount === 3 ? 2 : 1;
+
   function resolve(key: keyof ClauseState, toastTitle: string) {
     setClauses((prev) => ({ ...prev, [key]: "resolved" }));
     onNotify(toastTitle, "Contract clause updated in working draft.");
+    onAudit(toastTitle, "CNT-2026-014");
   }
 
   return (
@@ -61,6 +110,8 @@ export function ContractTab({
           </Badge>
         </div>
       </div>
+
+      <PipelineStepper currentStage={currentStage} />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-5">
         {/* Left panel: document preview */}
@@ -217,12 +268,13 @@ export function ContractTab({
             <Button
               variant="outline"
               className="w-full justify-start"
-              onClick={() =>
+              onClick={() => {
                 onNotify(
                   "Version 1.2 saved to Irving Legal SharePoint",
                   "Synced via M365 SharePoint connector."
-                )
-              }
+                );
+                onAudit("Synced contract to M365 SharePoint", "CNT-2026-014");
+              }}
             >
               <Cloud className="h-4 w-4" />
               Sync Updates to M365 SharePoint
@@ -230,7 +282,11 @@ export function ContractTab({
             <Button
               variant="primary"
               className="w-full justify-start"
-              onClick={() => setPackageModalOpen(true)}
+              onClick={() => {
+                setPackageModalOpen(true);
+                setPackageGenerated(true);
+                onAudit("Generated signed council agenda package", "CNT-2026-014");
+              }}
             >
               <FileSignature className="h-4 w-4" />
               Generate Signed Adobe Pro Council Package

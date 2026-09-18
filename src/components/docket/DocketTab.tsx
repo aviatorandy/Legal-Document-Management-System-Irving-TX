@@ -140,11 +140,19 @@ export function DocketTab({
             <tbody>
               {visibleMatters.map((m) => {
                 const deadline = getDeadlineStatus(m);
+                const borderColor = deadline.overdue
+                  ? "border-l-red-500"
+                  : deadline.urgent
+                  ? "border-l-amber-400"
+                  : "border-l-transparent";
                 return (
                 <tr
                   key={m.id}
                   onClick={() => onOpenCase(m)}
-                  className="border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer transition-colors group"
+                  className={cn(
+                    "border-b border-l-4 border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer transition-colors group",
+                    borderColor
+                  )}
                 >
                   <td className="px-4 py-3 font-mono text-xs font-medium text-slate-700 whitespace-nowrap">
                     {m.caseNumber}
