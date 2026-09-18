@@ -5,6 +5,9 @@ import { Sidebar, tabs, TabKey } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { ToastViewport, ToastMessage } from "@/components/ui/Toast";
 import { DocketTab } from "@/components/docket/DocketTab";
+import { ClaimsTab } from "@/components/claims/ClaimsTab";
+import { ClaimDetailModal } from "@/components/claims/ClaimDetailModal";
+import { MatterDetailModal } from "@/components/matters/MatterDetailModal";
 import { IngestionTab } from "@/components/ingestion/IngestionTab";
 import { ContractTab } from "@/components/contract/ContractTab";
 import { ReportingTab } from "@/components/reporting/ReportingTab";
@@ -12,24 +15,32 @@ import { AuditLogTab } from "@/components/audit/AuditLogTab";
 import { NewMatterModal } from "@/components/modals/NewMatterModal";
 import {
   initialMatters,
+  initialClaims,
   initialDocs,
   initialAuditLog,
   Matter,
+  Claim,
   IngestedDoc,
   AuditLogEntry,
+  formatCurrency,
+  TODAY,
 } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 let toastSeq = 1;
 let auditSeq = 1;
+let escalationSeq = 42;
 
 export function AppShell() {
   const [activeTab, setActiveTab] = useState<TabKey>("docket");
   const [matters, setMatters] = useState<Matter[]>(initialMatters);
+  const [claims, setClaims] = useState<Claim[]>(initialClaims);
   const [docs, setDocs] = useState<IngestedDoc[]>(initialDocs);
   const [auditLog, setAuditLog] = useState<AuditLogEntry[]>(initialAuditLog);
   const [modalOpen, setModalOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [selectedMatterId, setSelectedMatterId] = useState<string | null>(null);
+  const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
 
   function notify(title: string, description?: string) {
     const id = toastSeq++;
@@ -51,22 +62,26 @@ export function AppShell() {
     setAuditLog((prev) => [...prev, entry]);
   }
 
-  function handleOpenCase(matter: Matter) {
+  function handleOpenMatter(matter: Matter) {
     if (matter.id === "m2") {
       setActiveTab("contract");
       return;
     }
-    if (matter.id === "m1") {
-      setActiveTab("ingestion");
-      return;
-    }
-    setActiveTab("docket");
-    notify(`Opening ${matter.caseNumber}`, matter.title);
+    setSelectedMatterId(matter.id);
+  }
+
+  function handleOpenClaim(claim: Claim) {
+    setSelectedClaimId(claim.id);
   }
 
   function handleCreateMatter(matter: Matter) {
     setMatters((prev) => [matter, ...prev]);
     logAudit("Created matter", matter.caseNumber);
+  }
+
+  function handleCreateClaim(claim: Claim) {
+    setClaims((prev) => [claim, ...prev]);
+    logAudit("Created claim", claim.claimNumber);
   }
 
   function handleRedact() {
@@ -91,6 +106,54 @@ export function AppShell() {
     logAudit("Redacted PII and applied Adobe Pro digital signature", "CLM-2026-089");
   }
 
+  function handleEscalate(claim: Claim) {
+    escalationSeq += 1;
+    const caseNumber = `LIT-2026-${escalationSeq}`;
+    const targetDate = new Date(TODAY.getTime() + 20 * 86400000)
+      .toISOString()
+      .slice(0, 10);
+
+    const newMatter: Matter = {
+      id: `m-esc-${Date.now()}`,
+      caseNumber,
+      title: claim.title,
+      type: "Civil Action",
+      dept: claim.dept,
+      targetDate,
+      deadlineType: "Civil Court Answer",
+      status: "Under Review",
+      exposure: claim.initialDemand || null,
+      exposureLabel: formatCurrency(claim.initialDemand),
+      pendingCouncil: false,
+      linkedClaimId: claim.id,
+    };
+
+    setMatters((prev) => [newMatter, ...prev]);
+    setClaims((prev) =>
+      prev.map((c) =>
+        c.id === claim.id
+          ? { ...c, status: "Converted to Litigation", linkedMatterId: newMatter.caseNumber }
+          : c
+      )
+    );
+    setDocs((prev) =>
+      prev.map((d) => (d.claimId === claim.id ? { ...d, matterId: newMatter.id } : d))
+    );
+    logAudit(`Converted claim ${claim.claimNumber} to litigation matter`, newMatter.caseNumber);
+    notify(
+      `Claim converted — ${caseNumber} created`,
+      "Incident details and all attachments carried over automatically."
+    );
+
+    setSelectedClaimId(null);
+    setActiveTab("docket");
+    setSelectedMatterId(newMatter.id);
+  }
+
+  const selectedMatter = matters.find((m) => m.id === selectedMatterId) ?? null;
+  const selectedClaim = claims.find((c) => c.id === selectedClaimId) ?? null;
+  const convertedMatterNumber = claims.find((c) => c.id === "c1")?.linkedMatterId;
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <Sidebar activeTab={activeTab} onSelect={setActiveTab} />
@@ -99,7 +162,9 @@ export function AppShell() {
         <TopBar
           activeTab={activeTab}
           matters={matters}
-          onSelectMatter={handleOpenCase}
+          claims={claims}
+          onSelectMatter={handleOpenMatter}
+          onSelectClaim={handleOpenClaim}
           onNewMatter={() => setModalOpen(true)}
         />
 
@@ -129,7 +194,10 @@ export function AppShell() {
 
         <main className="flex-1 mx-auto w-full max-w-[1400px] px-6 py-6">
           {activeTab === "docket" && (
-            <DocketTab matters={matters} onOpenCase={handleOpenCase} />
+            <DocketTab matters={matters} onOpenCase={handleOpenMatter} />
+          )}
+          {activeTab === "claims" && (
+            <ClaimsTab claims={claims} onOpenClaim={handleOpenClaim} />
           )}
           {activeTab === "ingestion" && (
             <IngestionTab
@@ -137,6 +205,7 @@ export function AppShell() {
               onRedact={handleRedact}
               onNotify={notify}
               onAudit={logAudit}
+              linkedMatterNumber={convertedMatterNumber}
             />
           )}
           {activeTab === "contract" && (
@@ -150,7 +219,23 @@ export function AppShell() {
       <NewMatterModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onCreate={handleCreateMatter}
+        onCreateMatter={handleCreateMatter}
+        onCreateClaim={handleCreateClaim}
+      />
+
+      <ClaimDetailModal
+        claim={selectedClaim}
+        docs={docs}
+        onClose={() => setSelectedClaimId(null)}
+        onEscalate={handleEscalate}
+      />
+
+      <MatterDetailModal
+        matter={selectedMatter}
+        docs={docs}
+        auditLog={auditLog}
+        claims={claims}
+        onClose={() => setSelectedMatterId(null)}
       />
 
       <ToastViewport toasts={toasts} onDismiss={dismissToast} />

@@ -33,11 +33,13 @@ export function IngestionTab({
   onRedact,
   onNotify,
   onAudit,
+  linkedMatterNumber,
 }: {
   docs: IngestedDoc[];
   onRedact: () => void;
   onNotify: (title: string, description?: string) => void;
   onAudit: (action: string, target: string) => void;
+  linkedMatterNumber?: string;
 }) {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -74,6 +76,11 @@ export function IngestionTab({
           <p className="text-sm text-slate-500 mt-0.5">
             Pothole & Axle Structural Damage (MacArthur Blvd) — Public Works
           </p>
+          {linkedMatterNumber && (
+            <p className="text-xs font-medium text-purple-700 mt-1">
+              Linked to litigation matter {linkedMatterNumber} — escalated from this claim
+            </p>
+          )}
         </div>
         <Button variant="primary" onClick={runTriage} disabled={running}>
           {running ? (
