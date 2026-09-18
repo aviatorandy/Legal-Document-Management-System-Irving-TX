@@ -32,10 +32,12 @@ export function IngestionTab({
   docs,
   onRedact,
   onNotify,
+  onAudit,
 }: {
   docs: IngestedDoc[];
   onRedact: () => void;
   onNotify: (title: string, description?: string) => void;
+  onAudit: (action: string, target: string) => void;
 }) {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -57,6 +59,7 @@ export function IngestionTab({
           "Concourse AI Document Triage complete",
           "All 4 documents extracted & synced to M365 SharePoint."
         );
+        onAudit("Ran AI document triage (4 files)", "CLM-2026-089");
       }
     }, 60);
   }

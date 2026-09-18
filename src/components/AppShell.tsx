@@ -1,34 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { Gavel, FolderInput, FileCheck2, Plus, BarChart3 } from "lucide-react";
-import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/Button";
+import { Sidebar, tabs, TabKey } from "@/components/Sidebar";
+import { TopBar } from "@/components/TopBar";
 import { ToastViewport, ToastMessage } from "@/components/ui/Toast";
 import { DocketTab } from "@/components/docket/DocketTab";
 import { IngestionTab } from "@/components/ingestion/IngestionTab";
 import { ContractTab } from "@/components/contract/ContractTab";
 import { ReportingTab } from "@/components/reporting/ReportingTab";
+import { AuditLogTab } from "@/components/audit/AuditLogTab";
 import { NewMatterModal } from "@/components/modals/NewMatterModal";
-import { GlobalSearch } from "@/components/GlobalSearch";
-import { initialMatters, initialDocs, Matter, IngestedDoc } from "@/lib/data";
+import {
+  initialMatters,
+  initialDocs,
+  initialAuditLog,
+  Matter,
+  IngestedDoc,
+  AuditLogEntry,
+} from "@/lib/data";
 import { cn } from "@/lib/utils";
 
-type TabKey = "docket" | "ingestion" | "contract" | "reporting";
-
-const tabs: { key: TabKey; label: string; icon: typeof Gavel }[] = [
-  { key: "docket", label: "Litigation & Claims Docket", icon: Gavel },
-  { key: "ingestion", label: "Document Bundle Ingestion & Triage", icon: FolderInput },
-  { key: "contract", label: "Contract Compliance Studio", icon: FileCheck2 },
-  { key: "reporting", label: "Reporting & Analytics", icon: BarChart3 },
-];
-
 let toastSeq = 1;
+let auditSeq = 1;
 
 export function AppShell() {
   const [activeTab, setActiveTab] = useState<TabKey>("docket");
   const [matters, setMatters] = useState<Matter[]>(initialMatters);
   const [docs, setDocs] = useState<IngestedDoc[]>(initialDocs);
+  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>(initialAuditLog);
   const [modalOpen, setModalOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
@@ -39,6 +38,17 @@ export function AppShell() {
 
   function dismissToast(id: number) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
+  }
+
+  function logAudit(action: string, targetEntity: string) {
+    const entry: AuditLogEntry = {
+      id: `audit-${auditSeq++}`,
+      timestamp: new Date().toISOString(),
+      user: "Andy Chang",
+      action,
+      targetEntity,
+    };
+    setAuditLog((prev) => [...prev, entry]);
   }
 
   function handleOpenCase(matter: Matter) {
@@ -56,6 +66,7 @@ export function AppShell() {
 
   function handleCreateMatter(matter: Matter) {
     setMatters((prev) => [matter, ...prev]);
+    logAudit("Created matter", matter.caseNumber);
   }
 
   function handleRedact() {
@@ -77,65 +88,64 @@ export function AppShell() {
       "Adobe Pro PII Redaction complete",
       "Juvenile PII redacted and document digitally signed."
     );
+    logAudit("Redacted PII and applied Adobe Pro digital signature", "CLM-2026-089");
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Header />
+    <div className="min-h-screen bg-slate-50 flex">
+      <Sidebar activeTab={activeTab} onSelect={setActiveTab} />
 
-      <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-[1600px] px-6">
-          <div className="flex items-center justify-between">
-            <nav className="flex items-center gap-1 overflow-x-auto">
-              {tabs.map((t) => {
-                const Icon = t.icon;
-                const active = activeTab === t.key;
-                return (
-                  <button
-                    key={t.key}
-                    onClick={() => setActiveTab(t.key)}
-                    className={cn(
-                      "flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3.5 text-sm font-medium transition-colors",
-                      active
-                        ? "border-[#0b2340] text-[#0b2340]"
-                        : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {t.label}
-                  </button>
-                );
-              })}
-            </nav>
-            <div className="hidden lg:flex items-center gap-3 py-2">
-              <GlobalSearch matters={matters} onSelect={handleOpenCase} />
-              <Button onClick={() => setModalOpen(true)}>
-                <Plus className="h-4 w-4" />
-                New Matter Intake
-              </Button>
-            </div>
-          </div>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <TopBar
+          activeTab={activeTab}
+          matters={matters}
+          onSelectMatter={handleOpenCase}
+          onNewMatter={() => setModalOpen(true)}
+        />
+
+        <div className="lg:hidden border-b border-slate-200 bg-white px-4">
+          <nav className="flex items-center gap-1 overflow-x-auto">
+            {tabs.map((t) => {
+              const Icon = t.icon;
+              const active = activeTab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => setActiveTab(t.key)}
+                  className={cn(
+                    "flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-xs font-medium transition-colors",
+                    active
+                      ? "border-[#0b2340] text-[#0b2340]"
+                      : "border-transparent text-slate-500 hover:text-slate-800"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {t.label}
+                </button>
+              );
+            })}
+          </nav>
         </div>
-      </div>
 
-      <div className="lg:hidden px-6 pt-4 space-y-3">
-        <GlobalSearch matters={matters} onSelect={handleOpenCase} />
-        <Button className="w-full" onClick={() => setModalOpen(true)}>
-          <Plus className="h-4 w-4" />
-          New Matter Intake
-        </Button>
+        <main className="flex-1 mx-auto w-full max-w-[1400px] px-6 py-6">
+          {activeTab === "docket" && (
+            <DocketTab matters={matters} onOpenCase={handleOpenCase} />
+          )}
+          {activeTab === "ingestion" && (
+            <IngestionTab
+              docs={docs}
+              onRedact={handleRedact}
+              onNotify={notify}
+              onAudit={logAudit}
+            />
+          )}
+          {activeTab === "contract" && (
+            <ContractTab onNotify={notify} onAudit={logAudit} />
+          )}
+          {activeTab === "reporting" && <ReportingTab matters={matters} />}
+          {activeTab === "audit" && <AuditLogTab entries={auditLog} />}
+        </main>
       </div>
-
-      <main className="mx-auto max-w-[1600px] px-6 py-6">
-        {activeTab === "docket" && (
-          <DocketTab matters={matters} onOpenCase={handleOpenCase} />
-        )}
-        {activeTab === "ingestion" && (
-          <IngestionTab docs={docs} onRedact={handleRedact} onNotify={notify} />
-        )}
-        {activeTab === "contract" && <ContractTab onNotify={notify} />}
-        {activeTab === "reporting" && <ReportingTab matters={matters} />}
-      </main>
 
       <NewMatterModal
         open={modalOpen}

@@ -378,6 +378,38 @@ export function categoryToType(category: string): MatterType {
   return "Civil Action";
 }
 
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string; // ISO datetime
+  user: string;
+  action: string;
+  targetEntity: string;
+}
+
+export const initialAuditLog: AuditLogEntry[] = [
+  {
+    id: "a1",
+    timestamp: "2026-09-15T09:12:00Z",
+    user: "Andy Chang",
+    action: "Created matter",
+    targetEntity: "CLM-2026-089",
+  },
+  {
+    id: "a2",
+    timestamp: "2026-09-16T14:03:00Z",
+    user: "Andy Chang",
+    action: "Uploaded document bundle (4 files)",
+    targetEntity: "CLM-2026-089",
+  },
+  {
+    id: "a3",
+    timestamp: "2026-09-17T10:47:00Z",
+    user: "Andy Chang",
+    action: "Opened contract redline",
+    targetEntity: "CNT-2026-014",
+  },
+];
+
 export function formatCurrency(n: number): string {
   return n.toLocaleString("en-US", {
     style: "currency",
