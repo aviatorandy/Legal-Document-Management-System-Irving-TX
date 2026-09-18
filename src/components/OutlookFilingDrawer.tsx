@@ -80,7 +80,7 @@ export function OutlookFilingDrawer({
               <Mail className="h-4 w-4 text-white" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">Outlook 365 Legal Add-In</p>
+              <p className="text-sm font-semibold text-slate-900">Microsoft 365 Add-In Preview</p>
               <p className="text-[11px] text-slate-400">Concourse LegalFlow Simulator</p>
             </div>
           </div>

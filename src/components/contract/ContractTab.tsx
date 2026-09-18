@@ -90,7 +90,11 @@ export function ContractTab({
   ).length;
 
   const isExecuted = matter.status === "Executed";
-  const currentStage = isExecuted ? 3 : packageGenerated ? 2 : resolvedCount === 3 ? 2 : 1;
+  const currentStage = isExecuted
+    ? 3
+    : resolvedCount === 3 && packageGenerated
+    ? 2
+    : 1;
 
   function markExecuted() {
     onUpdateMatter({ ...matter, status: "Executed", pendingCouncil: false });
@@ -166,8 +170,8 @@ export function ContractTab({
               tone={clauses.section4 === "resolved" ? "resolved" : "amber"}
             >
               {clauses.section4 === "resolved"
-                ? "RESOLVED: Indemnification cap aligned to Texas Municipal Tort Claims Act statutory limit of $250,000."
-                : "FLAG: Vendor Indemnification Cap ($2,000,000) Exceeds Texas Municipal Tort Claims Act Statutory Limit of $250,000."}
+                ? "RESOLVED: City Standard Indemnification Language applied."
+                : "FLAG: One-sided vendor indemnification language may allocate risk beyond the City's approved contracting position. Attorney review required."}
             </CalloutBox>
 
             <p className="font-semibold mt-6 mb-2">
@@ -175,15 +179,15 @@ export function ContractTab({
             </p>
             <p className="mb-2 text-slate-700">
               {clauses.section9 === "resolved"
-                ? "Vendor certifies, in accordance with Tex. Gov. Code § 2271, that it does not boycott Israel and will not boycott Israel during the term of this Agreement, and further certifies compliance with Tex. Gov. Code § 2274 regarding firearm entity and firearm trade association verification."
+                ? "Vendor certifies, in accordance with Tex. Gov't Code § 2271.002, that it does not boycott Israel and will not boycott Israel during the term of this Agreement."
                 : "Vendor shall comply with all applicable federal, state, and local laws in the performance of this Agreement."}
             </p>
             <CalloutBox
               tone={clauses.section9 === "resolved" ? "resolved" : "red"}
             >
               {clauses.section9 === "resolved"
-                ? "RESOLVED: Tex. Gov. Code § 2271 anti-boycott / firearm entity verification clause injected."
-                : "FLAG: Missing Texas Government Code § 2271 Anti-Boycott / Firearm Entity Verification."}
+                ? "RESOLVED: Tex. Gov't Code § 2271.002 verification clause injected."
+                : "FLAG: Missing Chapter 2271 Verification."}
             </CalloutBox>
 
             <p className="font-semibold mt-6 mb-2">
@@ -199,7 +203,7 @@ export function ContractTab({
             >
               {clauses.section12 === "resolved"
                 ? "RESOLVED: Municipal non-appropriation clause added per City of Irving standard funding provisions."
-                : "FLAG: Missing Mandatory Texas Municipal Non-Appropriation Clause."}
+                : "FLAG: Missing Municipal Non-Appropriation Provision."}
             </CalloutBox>
           </div>
         </div>
@@ -215,43 +219,44 @@ export function ContractTab({
             </div>
 
             <InspectorItem
-              title="Indemnification Cap Exceeds TMTCA Limit"
-              citation="Tex. Civ. Prac. & Rem. Code § 101.023"
-              rationale="Municipal liability under the Texas Tort Claims Act is capped at $250,000 per person / $250,000 per occurrence for property damage. A vendor indemnification cap above this limit creates unenforceable, misleading contractual exposure."
+              title="One-Sided Vendor Indemnification Requires Review"
+              statusLabel="Attorney Review Required"
+              citation="City Standard Contracting Position"
+              rationale="The proposed provision may allocate risk beyond the City's approved contracting position. Legal review is required before acceptance."
               resolved={clauses.section4 === "resolved"}
               action={
                 <Button
                   size="sm"
                   variant="secondary"
                   onClick={() =>
-                    resolve("section4", "Texas statutory cap applied")
+                    resolve("section4", "City Standard Indemnification Language applied")
                   }
                   disabled={clauses.section4 === "resolved"}
                 >
-                  Apply Texas Statutory Cap ($250k)
+                  Apply City Standard Indemnification Language
                 </Button>
               }
             />
             <InspectorItem
-              title="Missing Anti-Boycott / Firearm Entity Verification"
-              citation="Tex. Gov. Code § 2271"
-              rationale="Contracts with a value of $100,000 or more require a written verification that the vendor does not boycott Israel and is not a firearm entity/trade association subject to discrimination, before the City may enter into the agreement."
+              title="Missing Chapter 2271 Verification"
+              citation="Tex. Gov't Code §2271.002"
+              rationale="This $480,000 contract requires review for the applicable written Chapter 2271 verification. The vendor profile indicates more than 10 full-time employees."
               resolved={clauses.section9 === "resolved"}
               action={
                 <Button
                   size="sm"
                   variant="secondary"
                   onClick={() =>
-                    resolve("section9", "§ 2271 verification clause injected")
+                    resolve("section9", "Chapter 2271 verification clause injected")
                   }
                   disabled={clauses.section9 === "resolved"}
                 >
-                  Inject Tex. Gov Code § 2271 Clause
+                  Insert Chapter 2271 Verification
                 </Button>
               }
             />
             <InspectorItem
-              title="Missing Non-Appropriation Clause"
+              title="Missing Municipal Non-Appropriation Provision"
               citation="Tex. Local Gov't Code § 271.903"
               rationale="Multi-year municipal contracts must include a non-appropriation clause allowing termination without penalty if City Council does not appropriate funds in a subsequent fiscal year."
               resolved={clauses.section12 === "resolved"}
@@ -268,7 +273,7 @@ export function ContractTab({
                   }
                   disabled={clauses.section12 === "resolved"}
                 >
-                  Inject Municipal Non-Appropriation Clause
+                  Insert Non-Appropriation Provision
                 </Button>
               }
             />
@@ -284,26 +289,26 @@ export function ContractTab({
               onClick={() => {
                 onNotify(
                   "Version 1.2 saved to Irving Legal SharePoint",
-                  "Synced via M365 SharePoint connector."
+                  "Prepared for M365 SharePoint sync."
                 );
-                onAudit("Synced contract to M365 SharePoint", "CNT-2026-014");
+                onAudit("Prepared contract updates for M365 SharePoint", "CNT-2026-014");
               }}
             >
               <Cloud className="h-4 w-4" />
-              Sync Updates to M365 SharePoint
+              Prepare Updates for M365 SharePoint
             </Button>
             <Button
               variant="primary"
               className="w-full justify-start"
-              disabled={isExecuted}
+              disabled={isExecuted || resolvedCount < 3}
               onClick={() => {
                 setPackageModalOpen(true);
                 setPackageGenerated(true);
-                onAudit("Generated signed council agenda package", matter.caseNumber);
+                onAudit("Generated council agenda signature package", matter.caseNumber);
               }}
             >
               <FileSignature className="h-4 w-4" />
-              Generate Signed Adobe Pro Council Package
+              Generate Adobe Pro Council Signature Package
             </Button>
             {packageGenerated && !isExecuted && (
               <Button
@@ -328,7 +333,7 @@ export function ContractTab({
       <Modal
         open={packageModalOpen}
         onClose={() => setPackageModalOpen(false)}
-        title="Council Agenda Package Generated"
+        title="Council Agenda Signature Package Prepared"
         description="Adobe Acrobat Pro executive packet"
       >
         <div className="space-y-4">
@@ -336,12 +341,13 @@ export function ContractTab({
             <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-emerald-800">
-                CNT-2026-014_Council_Agenda_Packet.pdf created
+                CNT-2026-014_Council_Agenda_Packet.pdf prepared
               </p>
               <p className="text-xs text-emerald-700 mt-1">
                 Bundled contract, compliance summary, and legal sufficiency
                 sign-off into a single Adobe Acrobat Pro PDF/A package,
-                routed to the City Secretary for agenda placement.
+                routed to the City Secretary for agenda placement and
+                Council signature.
               </p>
             </div>
           </div>
@@ -406,6 +412,7 @@ function InspectorItem({
   resolved,
   action,
   last,
+  statusLabel,
 }: {
   title: string;
   citation: string;
@@ -413,6 +420,7 @@ function InspectorItem({
   resolved: boolean;
   action: React.ReactNode;
   last?: boolean;
+  statusLabel?: string;
 }) {
   return (
     <div
@@ -424,7 +432,7 @@ function InspectorItem({
       <div className="flex items-center justify-between gap-2 mb-1">
         <p className="text-sm font-semibold text-slate-800">{title}</p>
         <Badge tone={resolved ? "green" : "amber"}>
-          {resolved ? "Resolved" : "Flagged"}
+          {resolved ? "Resolved" : statusLabel ?? "Flagged"}
         </Badge>
       </div>
       <p className="text-xs font-mono text-slate-400 mb-1.5">{citation}</p>

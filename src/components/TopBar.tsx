@@ -53,10 +53,10 @@ export function TopBar({
         <div className="flex items-center gap-3 shrink-0">
           <StatusPill color="green" label="M365 SharePoint: Synced" />
           <StatusPill color="blue" label="Adobe Acrobat Pro: Connected" />
-          <StatusPill color="purple" label="Texas SLA Engine: Active" />
+          <StatusPill color="purple" label="Deadline Engine: Active" />
           <button
             onClick={onOpenOutlook}
-            title="Outlook 365 Legal Add-In"
+            title="Microsoft 365 Add-In Preview"
             className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-[#0078D4] transition-colors"
           >
             <Mail className="h-4 w-4" />

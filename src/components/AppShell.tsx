@@ -260,7 +260,7 @@ export function AppShell() {
           )}
           {activeTab === "ingestion" && (
             <IngestionTab
-              docs={docs}
+              docs={docs.filter((d) => d.claimId === "c1")}
               onRedactFinalize={handleRedactFinalize}
               onNotify={notify}
               onAudit={logAudit}
