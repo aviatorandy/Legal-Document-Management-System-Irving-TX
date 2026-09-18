@@ -111,7 +111,7 @@ export function AppShell() {
 
   function handleEscalate(claim: Claim) {
     escalationSeq += 1;
-    const caseNumber = `LIT-2026-${escalationSeq}`;
+    const caseNumber = `LIT-2026-${String(escalationSeq).padStart(3, "0")}`;
     const targetDate = new Date(TODAY.getTime() + 20 * 86400000)
       .toISOString()
       .slice(0, 10);
