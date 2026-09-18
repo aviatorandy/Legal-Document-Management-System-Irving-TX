@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  FileText,
   Link2,
   Gavel,
   Upload,
@@ -17,6 +16,11 @@ import {
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { RedactionReviewModal } from "@/components/RedactionReviewModal";
+import {
+  isRedactableDoc,
+  LinkedDocumentsList,
+} from "@/components/documents/LinkedDocumentsList";
 import {
   AuditLogEntry,
   Claim,
@@ -41,6 +45,7 @@ export function MatterDetailModal({
   onUpdateMatter,
   onAudit,
   onNotify,
+  onRedactFinalize,
 }: {
   matter: Matter | null;
   docs: IngestedDoc[];
@@ -50,13 +55,23 @@ export function MatterDetailModal({
   onUpdateMatter: (matter: Matter) => void;
   onAudit: (action: string, target: string) => void;
   onNotify: (title: string, description?: string) => void;
+  onRedactFinalize: (acceptedCount: number) => void;
 }) {
   const [dateDraft, setDateDraft] = useState("");
   const [showDatePicker, setShowDatePicker] = useState<"hearing" | "docket" | null>(null);
   const [exposureDraft, setExposureDraft] = useState("");
   const [showExposureInput, setShowExposureInput] = useState(false);
+  const [redactingDoc, setRedactingDoc] = useState<IngestedDoc | null>(null);
 
   if (!matter) return null;
+
+  function handlePreview(doc: IngestedDoc) {
+    if (isRedactableDoc(doc)) {
+      setRedactingDoc(doc);
+    } else {
+      onNotify(`Previewing ${doc.fileName}`, "Read-only preview.");
+    }
+  }
 
   const deadline = getDeadlineStatus(matter);
   const linkedDocs = docs.filter((d) => d.matterId === matter.id);
@@ -118,6 +133,9 @@ export function MatterDetailModal({
         <div className="flex items-center gap-2">
           <Badge tone={typeTone[matter.type]}>{matter.type}</Badge>
           <Badge tone="slate">{matter.status}</Badge>
+          {matter.type === "Civil Action" &&
+            matter.deadlineType === "Civil Court Answer" &&
+            !deadline.overdue && <Badge tone="amber">Answer Pending</Badge>}
         </div>
 
         {linkedClaim && (
@@ -161,14 +179,7 @@ export function MatterDetailModal({
             Documents ({linkedDocs.length})
           </p>
           {linkedDocs.length > 0 ? (
-            <ul className="space-y-1.5">
-              {linkedDocs.map((d) => (
-                <li key={d.id} className="flex items-center gap-2 text-sm text-slate-700">
-                  <FileText className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate">{d.fileName}</span>
-                </li>
-              ))}
-            </ul>
+            <LinkedDocumentsList docs={linkedDocs} onPreview={handlePreview} />
           ) : (
             <p className="text-sm text-slate-400">No documents linked to this matter yet.</p>
           )}
@@ -353,7 +364,7 @@ export function MatterDetailModal({
                   onClick={() => setShowExposureInput(true)}
                 >
                   <DollarSign className="h-3.5 w-3.5" />
-                  Update Reserve
+                  Update Exposure Reserve
                 </Button>
                 <Button
                   variant="outline"
@@ -368,7 +379,7 @@ export function MatterDetailModal({
                   }
                 >
                   <FileOutput className="h-3.5 w-3.5" />
-                  Council Brief
+                  Generate Council Brief
                 </Button>
                 <Button
                   variant="outline"
@@ -384,13 +395,36 @@ export function MatterDetailModal({
                   }
                 >
                   <Handshake className="h-3.5 w-3.5" />
-                  Settlement
+                  Record Settlement
                 </Button>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      <RedactionReviewModal
+        open={!!redactingDoc}
+        docLabel={redactingDoc?.fileName ?? ""}
+        onClose={() => setRedactingDoc(null)}
+        onFinalize={(acceptedCount) => {
+          onRedactFinalize(acceptedCount);
+          onAudit(
+            `Applied ${acceptedCount} statutory redactions to Doc #IRV-2026-8819 [User: Paralegal]`,
+            matter.caseNumber
+          );
+          onNotify(
+            "Redacted copy generated: Incident_Report_REDACTED.pdf",
+            "Underlying metadata stripped."
+          );
+        }}
+        onDownload={() =>
+          onNotify(
+            "Download started",
+            "Incident_Report_REDACTED.pdf saved to your downloads."
+          )
+        }
+      />
     </Modal>
   );
 }

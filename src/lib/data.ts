@@ -391,6 +391,15 @@ export const initialDocs: IngestedDoc[] = [
     progress: 100,
     matterId: "m15",
   },
+  {
+    id: "d7",
+    fileName: "Officer_Field_Notice_Abatement.pdf",
+    docType: "Code Compliance Notice",
+    tags: [{ label: "Nuisance Abatement", tone: "neutral" }],
+    status: "Indexed",
+    progress: 100,
+    matterId: "m17",
+  },
 ];
 
 export const departments = [
@@ -464,6 +473,13 @@ export const initialAuditLog: AuditLogEntry[] = [
     user: "Officer R. Ramirez",
     action: "Citation issued",
     targetEntity: "ORD-2026-021",
+  },
+  {
+    id: "a5",
+    timestamp: "2026-09-12T11:05:00Z",
+    user: "Field Officer",
+    action: "Citation served to property owner",
+    targetEntity: "ORD-2026-015",
   },
 ];
 

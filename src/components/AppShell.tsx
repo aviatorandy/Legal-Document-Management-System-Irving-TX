@@ -110,10 +110,11 @@ export function AppShell() {
         d.id === "d2"
           ? {
               ...d,
+              fileName: "Irving_PD_Incident_Report_902_REDACTED.pdf",
               status: "Redacted & Signed",
               tags: [
                 { label: `${acceptedCount} Items Redacted`, tone: "success" },
-                { label: "Adobe Pro Signed", tone: "success" },
+                { label: "PIA Compliant", tone: "success" },
               ],
             }
           : d
@@ -295,6 +296,7 @@ export function AppShell() {
         onUpdateClaim={handleUpdateClaim}
         onAudit={logAudit}
         onNotify={notify}
+        onRedactFinalize={handleRedactFinalize}
       />
 
       <MatterDetailModal
@@ -306,6 +308,7 @@ export function AppShell() {
         onUpdateMatter={handleUpdateMatter}
         onAudit={logAudit}
         onNotify={notify}
+        onRedactFinalize={handleRedactFinalize}
       />
 
       <OutlookFilingDrawer
