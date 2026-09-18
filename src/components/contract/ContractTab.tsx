@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
+import { Matter } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 type SectionStatus = "flagged" | "resolved";
@@ -66,11 +67,15 @@ function PipelineStepper({ currentStage }: { currentStage: number }) {
 }
 
 export function ContractTab({
+  matter,
   onNotify,
   onAudit,
+  onUpdateMatter,
 }: {
+  matter: Matter;
   onNotify: (title: string, description?: string) => void;
   onAudit: (action: string, target: string) => void;
+  onUpdateMatter: (matter: Matter) => void;
 }) {
   const [clauses, setClauses] = useState<ClauseState>({
     section4: "flagged",
@@ -84,7 +89,14 @@ export function ContractTab({
     (s) => s === "resolved"
   ).length;
 
-  const currentStage = packageGenerated ? 2 : resolvedCount === 3 ? 2 : 1;
+  const isExecuted = matter.status === "Executed";
+  const currentStage = isExecuted ? 3 : packageGenerated ? 2 : resolvedCount === 3 ? 2 : 1;
+
+  function markExecuted() {
+    onUpdateMatter({ ...matter, status: "Executed", pendingCouncil: false });
+    onAudit("Marked contract Executed", matter.caseNumber);
+    onNotify("Contract executed", "Fully signed copy archived to SharePoint.");
+  }
 
   function resolve(key: keyof ClauseState, toastTitle: string) {
     setClauses((prev) => ({ ...prev, [key]: "resolved" }));
@@ -101,10 +113,11 @@ export function ContractTab({
           </h2>
           <p className="text-sm text-slate-500 mt-0.5">
             Vendor: SkyScale GovCloud Inc. &nbsp;|&nbsp; Value:{" "}
-            <span className="font-semibold text-slate-700">$480,000</span>
+            <span className="font-semibold text-slate-700">{matter.exposureLabel}</span>
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {isExecuted && <Badge tone="green">Executed</Badge>}
           <Badge tone={resolvedCount === 3 ? "green" : "amber"}>
             {resolvedCount} / 3 Compliance Flags Resolved
           </Badge>
@@ -282,15 +295,32 @@ export function ContractTab({
             <Button
               variant="primary"
               className="w-full justify-start"
+              disabled={isExecuted}
               onClick={() => {
                 setPackageModalOpen(true);
                 setPackageGenerated(true);
-                onAudit("Generated signed council agenda package", "CNT-2026-014");
+                onAudit("Generated signed council agenda package", matter.caseNumber);
               }}
             >
               <FileSignature className="h-4 w-4" />
               Generate Signed Adobe Pro Council Package
             </Button>
+            {packageGenerated && !isExecuted && (
+              <Button
+                variant="secondary"
+                className="w-full justify-start"
+                onClick={markExecuted}
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                Mark Contract Executed
+              </Button>
+            )}
+            {isExecuted && (
+              <p className="text-xs text-emerald-700 flex items-center gap-1.5 px-1">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Contract fully executed and archived.
+              </p>
+            )}
           </div>
         </div>
       </div>
