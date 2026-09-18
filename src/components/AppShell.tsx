@@ -84,7 +84,15 @@ export function AppShell() {
     logAudit("Created claim", claim.claimNumber);
   }
 
-  function handleRedact() {
+  function handleUpdateMatter(updated: Matter) {
+    setMatters((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+  }
+
+  function handleUpdateClaim(updated: Claim) {
+    setClaims((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+  }
+
+  function handleRedactFinalize(acceptedCount: number) {
     setDocs((prev) =>
       prev.map((d) =>
         d.id === "d2"
@@ -92,18 +100,13 @@ export function AppShell() {
               ...d,
               status: "Redacted & Signed",
               tags: [
-                { label: "PII Redacted", tone: "success" },
+                { label: `${acceptedCount} Items Redacted`, tone: "success" },
                 { label: "Adobe Pro Signed", tone: "success" },
               ],
             }
           : d
       )
     );
-    notify(
-      "Adobe Pro PII Redaction complete",
-      "Juvenile PII redacted and document digitally signed."
-    );
-    logAudit("Redacted PII and applied Adobe Pro digital signature", "CLM-2026-089");
   }
 
   function handleEscalate(claim: Claim) {
@@ -202,7 +205,7 @@ export function AppShell() {
           {activeTab === "ingestion" && (
             <IngestionTab
               docs={docs}
-              onRedact={handleRedact}
+              onRedactFinalize={handleRedactFinalize}
               onNotify={notify}
               onAudit={logAudit}
               linkedMatterNumber={convertedMatterNumber}
@@ -226,8 +229,12 @@ export function AppShell() {
       <ClaimDetailModal
         claim={selectedClaim}
         docs={docs}
+        auditLog={auditLog}
         onClose={() => setSelectedClaimId(null)}
         onEscalate={handleEscalate}
+        onUpdateClaim={handleUpdateClaim}
+        onAudit={logAudit}
+        onNotify={notify}
       />
 
       <MatterDetailModal
@@ -236,6 +243,9 @@ export function AppShell() {
         auditLog={auditLog}
         claims={claims}
         onClose={() => setSelectedMatterId(null)}
+        onUpdateMatter={handleUpdateMatter}
+        onAudit={logAudit}
+        onNotify={notify}
       />
 
       <ToastViewport toasts={toasts} onDismiss={dismissToast} />

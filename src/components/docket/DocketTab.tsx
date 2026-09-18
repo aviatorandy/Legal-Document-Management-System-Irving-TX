@@ -30,6 +30,8 @@ const statusTone: Record<MatterStatus, "slate" | "amber" | "blue" | "green" | "r
   "Awaiting Council": "purple",
   Discovery: "slate",
   "Closed - Settled": "green",
+  Executed: "green",
+  "Closed - Compliant": "green",
 };
 
 const typeTone: Record<string, "navy" | "blue" | "amber" | "zinc"> = {
