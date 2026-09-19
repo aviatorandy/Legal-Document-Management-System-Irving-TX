@@ -70,10 +70,12 @@ export function DocketTab({
     [matters]
   );
 
-  const visibleMatters = useMemo(
-    () => (filter === "All" ? matters : matters.filter((m) => m.type === filter)),
-    [matters, filter]
-  );
+  const visibleMatters = useMemo(() => {
+    const base = filter === "All" ? matters : matters.filter((m) => m.type === filter);
+    return [...base].sort(
+      (a, b) => getDeadlineStatus(a).daysRemaining - getDeadlineStatus(b).daysRemaining
+    );
+  }, [matters, filter]);
 
   return (
     <div className="space-y-6">
@@ -132,7 +134,7 @@ export function DocketTab({
                 <th className="px-4 py-3">Matter</th>
                 <th className="px-4 py-3">Type</th>
                 <th className="px-4 py-3">Dept</th>
-                <th className="px-4 py-3">Deadline / Milestone</th>
+                <th className="px-4 py-3">Deadline / Milestone ↑</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-right">Financial Exposure</th>
                 <th className="px-4 py-3" />
