@@ -116,7 +116,10 @@ export function ContractTab({
             Reviewing: IT Cloud Infrastructure Agreement
           </h2>
           <p className="text-sm text-slate-500 mt-0.5">
-            Vendor: SkyScale GovCloud Inc. &nbsp;|&nbsp; Value:{" "}
+            <span className="font-mono text-xs font-medium text-slate-600">
+              {matter.caseNumber}
+            </span>
+            &nbsp;&middot;&nbsp; Vendor: SkyScale GovCloud Inc. &nbsp;|&nbsp; Value:{" "}
             <span className="font-semibold text-slate-700">{matter.exposureLabel}</span>
           </p>
         </div>
