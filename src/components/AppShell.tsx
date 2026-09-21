@@ -47,6 +47,20 @@ export function AppShell() {
   const [outlookOpen, setOutlookOpen] = useState(false);
   const visibleTabs = roleTabAccess[role];
 
+  function handleResetDemo() {
+    setMatters(initialMatters);
+    setClaims(initialClaims);
+    setDocs(initialDocs);
+    setAuditLog(initialAuditLog);
+    setSelectedMatterId(null);
+    setSelectedClaimId(null);
+    setModalOpen(false);
+    setOutlookOpen(false);
+    setActiveTab("docket");
+    escalationSeq = 42;
+    notify("Demo reset", "All matters, claims, documents and the audit log have been restored to their original state.");
+  }
+
   function handleRoleChange(newRole: Role) {
     setRole(newRole);
     if (!roleTabAccess[newRole].includes(activeTab)) {
@@ -212,7 +226,12 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      <Sidebar activeTab={activeTab} visibleTabs={visibleTabs} onSelect={setActiveTab} />
+      <Sidebar
+        activeTab={activeTab}
+        visibleTabs={visibleTabs}
+        onSelect={setActiveTab}
+        onResetDemo={handleResetDemo}
+      />
 
       <div className="flex-1 min-w-0 flex flex-col">
         <TopBar

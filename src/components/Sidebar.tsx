@@ -26,19 +26,26 @@ export function Sidebar({
   activeTab,
   visibleTabs,
   onSelect,
+  onResetDemo,
 }: {
   activeTab: TabKey;
   visibleTabs: TabKey[];
   onSelect: (key: TabKey) => void;
+  onResetDemo: () => void;
 }) {
   const visible = tabs.filter((t) => visibleTabs.includes(t.key));
 
   return (
     <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-slate-100">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0b2340]">
+        <button
+          onClick={onResetDemo}
+          title="Reset Demo"
+          aria-label="Reset Demo"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0b2340] transition-transform hover:scale-105 active:scale-95"
+        >
           <Scale className="h-4.5 w-4.5 text-white" />
-        </div>
+        </button>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-slate-900 leading-tight">Concourse</p>
           <p className="text-[11px] text-slate-400 leading-tight">LegalFlow</p>
