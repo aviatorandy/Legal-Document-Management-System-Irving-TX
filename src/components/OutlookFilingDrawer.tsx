@@ -81,7 +81,7 @@ export function OutlookFilingDrawer({
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-900">Microsoft 365 Add-In Preview</p>
-              <p className="text-[11px] text-slate-400">Concourse LegalFlow Simulator</p>
+              <p className="text-[11px] text-slate-400">Concourse Platform Simulator</p>
             </div>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">

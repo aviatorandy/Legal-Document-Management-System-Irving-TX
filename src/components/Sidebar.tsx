@@ -48,7 +48,7 @@ export function Sidebar({
         </button>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-slate-900 leading-tight">Concourse</p>
-          <p className="text-[11px] text-slate-400 leading-tight">LegalFlow</p>
+          <p className="text-[11px] text-slate-400 leading-tight">Platform</p>
         </div>
       </div>
 

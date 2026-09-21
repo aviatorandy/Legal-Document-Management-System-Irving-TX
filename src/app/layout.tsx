@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Concourse LegalFlow | City of Irving Office of the City Attorney",
+  title: "Concourse Platform | City of Irving Office of the City Attorney",
   description:
     "Legal Case and Document Management System for the City of Irving Office of the City Attorney — RFP 147C-26F.",
 };
