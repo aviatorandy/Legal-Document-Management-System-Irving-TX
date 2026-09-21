@@ -18,12 +18,14 @@ export function OutlookFilingDrawer({
   matters,
   claims,
   onFile,
+  defaultTarget,
 }: {
   open: boolean;
   onClose: () => void;
   matters: Matter[];
   claims: Claim[];
   onFile: (target: FileTarget, savedEmailBody: boolean, savedAttachment: boolean) => void;
+  defaultTarget?: FileTarget | null;
 }) {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<FileTarget | null>(null);
@@ -32,13 +34,16 @@ export function OutlookFilingDrawer({
   const [filed, setFiled] = useState(false);
 
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      setSelected(defaultTarget ?? null);
+    } else {
       setQuery("");
       setSelected(null);
       setSaveBody(true);
       setSaveAttachment(true);
       setFiled(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const targets = useMemo<FileTarget[]>(() => {
@@ -120,19 +125,36 @@ export function OutlookFilingDrawer({
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
                   File to Matter or Claim
                 </p>
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    value={selected ? `${selected.caseNumber} — ${selected.title}` : query}
-                    onChange={(e) => {
-                      setSelected(null);
-                      setQuery(e.target.value);
-                    }}
-                    placeholder="Search case #, claim #, or title..."
-                    className="w-full rounded-md border border-slate-300 py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0b2340]/20 focus:border-[#0b2340]"
-                  />
-                </div>
+                {selected && defaultTarget && selected.id === defaultTarget.id ? (
+                  <div className="flex items-center justify-between gap-2 rounded-md border border-[#0b2340]/20 bg-[#0b2340]/5 px-3 py-2">
+                    <div className="min-w-0">
+                      <span className="font-mono text-xs font-medium text-[#0b2340]">
+                        {selected.caseNumber}
+                      </span>
+                      <p className="text-sm text-slate-800 truncate">{selected.title}</p>
+                    </div>
+                    <button
+                      onClick={() => setSelected(null)}
+                      className="shrink-0 text-xs font-medium text-blue-600 hover:underline"
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={selected ? `${selected.caseNumber} — ${selected.title}` : query}
+                      onChange={(e) => {
+                        setSelected(null);
+                        setQuery(e.target.value);
+                      }}
+                      placeholder="Search case #, claim #, or title..."
+                      className="w-full rounded-md border border-slate-300 py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#0b2340]/20 focus:border-[#0b2340]"
+                    />
+                  </div>
+                )}
                 {!selected && query.trim() && (
                   <div className="mt-1.5 rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
                     {results.length === 0 ? (

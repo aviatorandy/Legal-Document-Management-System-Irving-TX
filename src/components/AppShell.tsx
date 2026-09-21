@@ -45,6 +45,16 @@ export function AppShell() {
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
   const [role, setRole] = useState<Role>("City Attorney");
   const [outlookOpen, setOutlookOpen] = useState(false);
+  const [outlookTarget, setOutlookTarget] = useState<
+    { kind: "matter" | "claim"; id: string; caseNumber: string; title: string } | null
+  >(null);
+
+  function openOutlook(
+    target?: { kind: "matter" | "claim"; id: string; caseNumber: string; title: string }
+  ) {
+    setOutlookTarget(target ?? null);
+    setOutlookOpen(true);
+  }
   const visibleTabs = roleTabAccess[role];
 
   function handleResetDemo() {
@@ -243,7 +253,7 @@ export function AppShell() {
           onSelectMatter={handleOpenMatter}
           onSelectClaim={handleOpenClaim}
           onNewMatter={() => setModalOpen(true)}
-          onOpenOutlook={() => setOutlookOpen(true)}
+          onOpenOutlook={() => openOutlook()}
         />
 
         <div className="lg:hidden border-b border-slate-200 bg-white px-4">
@@ -316,6 +326,7 @@ export function AppShell() {
         onAudit={logAudit}
         onNotify={notify}
         onRedactFinalize={handleRedactFinalize}
+        onOpenOutlook={openOutlook}
       />
 
       <MatterDetailModal
@@ -328,6 +339,7 @@ export function AppShell() {
         onAudit={logAudit}
         onNotify={notify}
         onRedactFinalize={handleRedactFinalize}
+        onOpenOutlook={openOutlook}
       />
 
       <OutlookFilingDrawer
@@ -336,6 +348,7 @@ export function AppShell() {
         matters={matters}
         claims={claims}
         onFile={handleFileFromOutlook}
+        defaultTarget={outlookTarget}
       />
 
       <ToastViewport toasts={toasts} onDismiss={dismissToast} />

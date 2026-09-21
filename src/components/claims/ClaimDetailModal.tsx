@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Gavel, FileX, Handshake } from "lucide-react";
+import { ArrowRight, Gavel, FileX, Handshake, Mail } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -28,6 +28,7 @@ export function ClaimDetailModal({
   onAudit,
   onNotify,
   onRedactFinalize,
+  onOpenOutlook,
 }: {
   claim: Claim | null;
   docs: IngestedDoc[];
@@ -38,6 +39,7 @@ export function ClaimDetailModal({
   onAudit: (action: string, target: string) => void;
   onNotify: (title: string, description?: string) => void;
   onRedactFinalize: (acceptedCount: number) => void;
+  onOpenOutlook: (target: { kind: "claim"; id: string; caseNumber: string; title: string }) => void;
 }) {
   const [confirming, setConfirming] = useState(false);
   const [redactingDoc, setRedactingDoc] = useState<IngestedDoc | null>(null);
@@ -135,6 +137,23 @@ export function ClaimDetailModal({
             <p className="text-sm text-slate-400">No activity recorded yet.</p>
           )}
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full justify-center"
+          onClick={() =>
+            onOpenOutlook({
+              kind: "claim",
+              id: claim.id,
+              caseNumber: claim.claimNumber,
+              title: claim.title,
+            })
+          }
+        >
+          <Mail className="h-3.5 w-3.5" />
+          File from Outlook
+        </Button>
 
         {alreadyConverted ? (
           <div className="rounded-lg border border-purple-200 bg-purple-50 p-4 text-sm text-purple-800">

@@ -12,6 +12,7 @@ import {
   Handshake,
   ArrowUpRight,
   CheckCircle2,
+  Mail,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
@@ -46,6 +47,7 @@ export function MatterDetailModal({
   onAudit,
   onNotify,
   onRedactFinalize,
+  onOpenOutlook,
 }: {
   matter: Matter | null;
   docs: IngestedDoc[];
@@ -56,6 +58,7 @@ export function MatterDetailModal({
   onAudit: (action: string, target: string) => void;
   onNotify: (title: string, description?: string) => void;
   onRedactFinalize: (acceptedCount: number) => void;
+  onOpenOutlook: (target: { kind: "matter"; id: string; caseNumber: string; title: string }) => void;
 }) {
   const [dateDraft, setDateDraft] = useState("");
   const [showDatePicker, setShowDatePicker] = useState<"hearing" | "docket" | null>(null);
@@ -251,6 +254,23 @@ export function MatterDetailModal({
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
             Actions
           </p>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-center"
+            onClick={() =>
+              onOpenOutlook({
+                kind: "matter",
+                id: matter.id,
+                caseNumber: matter.caseNumber,
+                title: matter.title,
+              })
+            }
+          >
+            <Mail className="h-3.5 w-3.5" />
+            File from Outlook
+          </Button>
 
           {isContract && (
             <div className="space-y-2">
