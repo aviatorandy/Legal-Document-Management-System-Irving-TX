@@ -87,7 +87,7 @@ export function ReportingTab({ matters }: { matters: Matter[] }) {
       <div>
         <h2 className="text-lg font-semibold text-slate-900">Reporting & Analytics</h2>
         <p className="text-sm text-slate-500 mt-0.5">
-          Configurable municipal litigation exposure, caseload distribution, and statutory turnaround compliance
+          See where financial exposure and caseload are concentrated, and how well matters are keeping pace with their deadlines.
         </p>
       </div>
 

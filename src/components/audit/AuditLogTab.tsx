@@ -22,7 +22,7 @@ export function AuditLogTab({ entries }: { entries: AuditLogEntry[] }) {
       <div>
         <h2 className="text-lg font-semibold text-slate-900">Audit Log</h2>
         <p className="text-sm text-slate-500 mt-0.5">
-          Immutable record of matter creation, document actions, and compliance activity across the system
+          Every matter creation, document action, and compliance step is logged here automatically, with who did it and when.
         </p>
       </div>
 

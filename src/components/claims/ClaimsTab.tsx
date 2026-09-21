@@ -44,7 +44,7 @@ export function ClaimsTab({
       <div>
         <h2 className="text-lg font-semibold text-slate-900">Claims Intake & Triage</h2>
         <p className="text-sm text-slate-500 mt-0.5">
-          Administrative tort claims under review — pre-litigation, filed by citizens and vendors under the Texas Tort Claims Act
+          Claims from citizens and vendors under the Texas Tort Claims Act, before they escalate into litigation.
         </p>
       </div>
 
